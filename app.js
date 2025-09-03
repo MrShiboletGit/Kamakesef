@@ -57,7 +57,8 @@
 	}
 
 	function generateScenarioKey(scenario) {
-		return `${scenario.eventType}-${scenario.closeness}-${scenario.partySize}-${scenario.incomeTier}-${scenario.venue}-${scenario.location}`;
+		// Core factors only - these determine the vote buckets
+		return `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
 	}
 
 	function hasVotedOnScenario(scenario) {
@@ -121,9 +122,10 @@
 		};
 		
 		const venueNames = {
-			'garden': 'גן',
-			'hall': 'אולם',
 			'home': 'בית',
+			'yard': 'חצר',
+			'synagogue': 'בית כנסת',
+			'hall': 'אולם',
 			'restaurant': 'מסעדה'
 		};
 		
@@ -303,7 +305,7 @@
 		votesCountEl.textContent = total.toString();
 	}
 
-	function baseSuggestion({ eventType, closeness, partySize, incomeTier, venue, location }) {
+	function baseSuggestion({ eventType, closeness, venue, location }) {
 		let base = 200; // minimal baseline
 		// Event type modifier
 		switch (eventType) {
@@ -320,20 +322,13 @@
 			case 'close': base += 160; break;
 			case 'inner': base += 250; break;
 		}
-		// Income tier (reduced impact for higher tiers)
-		switch (incomeTier) {
-			case 'low': base *= 0.85; break;
-			case 'mid': base *= 1.0; break;
-			case 'high': base *= 1.03; break;
-			case 'veryHigh': base *= 1.06; break;
-			case 'premium': base *= 1.10; break;
-		}
 		// Venue
 		switch (venue) {
-			case 'garden': base += 40; break;
-			case 'hall': base += 70; break;
-			case 'restaurant': base += 30; break;
-			case 'home': base -= 40; break;
+			case 'home': base -= 50; break; // בית - more intimate, lower cost
+			case 'yard': base -= 20; break; // חצר - outdoor but at home
+			case 'synagogue': base += 20; break; // בית כנסת - formal religious setting
+			case 'hall': base += 70; break; // אולם אירועים - formal venue
+			case 'restaurant': base += 30; break; // מסעדה - dining venue
 		}
 		// Location
 		switch (location) {
@@ -342,16 +337,28 @@
 			case 'south': base += 0; break; // no change for south
 			case 'jerusalem': base += 30; break; // higher for Jerusalem
 		}
-		// Party size - first person is full amount, each additional person is 75%
-		if (partySize === 1) {
-			// Just one person, no change
-		} else {
-			// Add 75% of base for each additional person
-			const additionalPeople = partySize - 1;
-			base += (base * 0.75 * additionalPeople);
-		}
 		// Round to nearest 10
 		return Math.max(0, Math.round(base / 10) * 10);
+	}
+
+	function applyPersonalAdjustments(amount, { incomeTier, partySize }) {
+		// Income tier adjustment
+		switch (incomeTier) {
+			case 'low': amount *= 0.85; break;
+			case 'mid': amount *= 1.0; break;
+			case 'high': amount *= 1.03; break;
+			case 'veryHigh': amount *= 1.06; break;
+			case 'premium': amount *= 1.10; break;
+		}
+		
+		// Party size adjustment - first person is full amount, each additional person is 75%
+		if (partySize > 1) {
+			const additionalPeople = partySize - 1;
+			amount += (amount * 0.75 * additionalPeople);
+		}
+		
+		// Round to nearest 10
+		return Math.max(0, Math.round(amount / 10) * 10);
 	}
 
 	async function crowdAdjustment(baseAmount, scenario) {
@@ -411,22 +418,31 @@
 		const incomeTier = document.getElementById('incomeTier').value;
 		const venue = document.getElementById('venue').value;
 		const location = document.getElementById('location').value;
-		const scenario = { eventType, closeness, partySize, incomeTier, venue, location };
-		const base = baseSuggestion(scenario);
-		const result = await crowdAdjustment(base, scenario);
 		
-		updateCheque(result.amount, eventType);
+		// Core scenario for crowd learning (without personal factors)
+		const coreScenario = { eventType, closeness, venue, location };
+		// Full scenario for personal adjustments and voting
+		const fullScenario = { eventType, closeness, partySize, incomeTier, venue, location };
+		
+		// Calculate base amount from core factors only
+		const base = baseSuggestion(coreScenario);
+		// Get crowd-adjusted amount
+		const crowdResult = await crowdAdjustment(base, coreScenario);
+		// Apply personal adjustments
+		const finalAmount = applyPersonalAdjustments(crowdResult.amount, { incomeTier, partySize });
+		
+		updateCheque(finalAmount, eventType);
 		voteBox.hidden = false;
 		updateVotesUI();
 		
-		// Store current scenario for voting
-		window.currentScenario = scenario;
-		window.currentAmount = result.amount;
+		// Store current scenario for voting (use core scenario for vote buckets)
+		window.currentScenario = coreScenario;
+		window.currentAmount = finalAmount;
 		
 		// Check if user has already voted on this scenario
 		updateVoteButtonsState();
 		
-		return result.amount;
+		return finalAmount;
 	}
 
 	// Input mirrors

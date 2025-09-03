@@ -17,9 +17,9 @@ app.use(express.json());
 // Serve static files
 app.use(express.static(__dirname));
 
-// Generate a unique key for each calculation scenario
+// Generate a unique key for each calculation scenario (core factors only)
 function generateScenarioKey(scenario) {
-    return `${scenario.eventType}-${scenario.closeness}-${scenario.partySize}-${scenario.incomeTier}-${scenario.venue}-${scenario.location}`;
+    return `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
 }
 
 // API Routes
