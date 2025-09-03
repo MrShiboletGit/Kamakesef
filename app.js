@@ -259,17 +259,19 @@
 				const data = await response.json();
 				const currentVoteCount = data.totalVotes;
 				
-				// Only update if there are actually new votes
-				if (currentVoteCount > lastVoteCount && lastVoteCount > 0) {
-					const newVotes = currentVoteCount - lastVoteCount;
-					// Show notification for new votes
-					if (newVotes > 0) {
-						showVoteNotification({
-							voteType: 'justRight', // Default for demo
-							amount: 500 // Default for demo
-						});
+				// On initial load (lastVoteCount is 0) or when there are new votes
+				if (lastVoteCount === 0 || currentVoteCount > lastVoteCount) {
+					if (currentVoteCount > lastVoteCount && lastVoteCount > 0) {
+						const newVotes = currentVoteCount - lastVoteCount;
+						// Show notification for new votes
+						if (newVotes > 0) {
+							showVoteNotification({
+								voteType: 'justRight', // Default for demo
+								amount: 500 // Default for demo
+							});
+						}
 					}
-					// Only refresh the votes list if there are new votes
+					// Load/refresh the votes list
 					await fetchPublicVotes();
 				}
 				
