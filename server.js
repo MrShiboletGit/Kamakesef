@@ -54,7 +54,7 @@ app.get('/api/votes', async (req, res) => {
 
 // Submit a vote
 app.post('/api/vote', async (req, res) => {
-    const { scenario, voteType, amount } = req.body;
+    const { scenario, fullScenario, voteType, amount } = req.body;
     
     if (!scenario || !voteType || !amount) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -122,7 +122,7 @@ app.post('/api/vote', async (req, res) => {
             .from('calculations')
             .insert([{
                 timestamp: new Date().toISOString(),
-                scenario: scenario,
+                scenario: fullScenario || scenario, // Use fullScenario for display if available
                 amount: amount,
                 vote_type: voteType,
                 scenario_key: scenarioKey

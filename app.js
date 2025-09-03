@@ -135,7 +135,8 @@
 			'jerusalem': 'ירושלים'
 		};
 		
-		return `${eventNames[scenario.eventType]} • ${closenessNames[scenario.closeness]} • ${venueNames[scenario.venue]} • ${locationNames[scenario.location]}`;
+		const partySizeText = scenario.partySize ? ` • ${scenario.partySize} אנשים` : '';
+		return `${eventNames[scenario.eventType]} • ${closenessNames[scenario.closeness]}${partySizeText} • ${venueNames[scenario.venue]} • ${locationNames[scenario.location]}`;
 	}
 
 	// Public vote functions
@@ -433,8 +434,9 @@
 		voteBox.hidden = false;
 		updateVotesUI();
 		
-		// Store current scenario for voting (use core scenario for vote buckets)
+		// Store current scenario for voting (use core scenario for vote buckets, but full scenario for display)
 		window.currentScenario = coreScenario;
+		window.currentFullScenario = fullScenario;
 		window.currentAmount = finalAmount;
 		
 		// Check if user has already voted on this scenario
@@ -512,7 +514,8 @@
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
-						scenario: window.currentScenario,
+						scenario: window.currentScenario, // Core scenario for vote buckets
+						fullScenario: window.currentFullScenario, // Full scenario for display
 						voteType: type,
 						amount: window.currentAmount
 					})
