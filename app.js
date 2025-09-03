@@ -58,13 +58,17 @@
 
 	function generateScenarioKey(scenario) {
 		// Core factors only - these determine the vote buckets
-		return `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
+		const key = `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
+		console.log('Generated scenario key:', key, 'for scenario:', scenario);
+		return key;
 	}
 
 	function hasVotedOnScenario(scenario) {
 		const votedScenarios = getVotedScenarios();
 		const scenarioKey = generateScenarioKey(scenario);
-		return votedScenarios.includes(scenarioKey);
+		const hasVoted = votedScenarios.includes(scenarioKey);
+		console.log('Checking if voted on scenario:', scenarioKey, 'Voted scenarios:', votedScenarios, 'Has voted:', hasVoted);
+		return hasVoted;
 	}
 
 	function markScenarioAsVoted(scenario) {
@@ -73,6 +77,9 @@
 		if (!votedScenarios.includes(scenarioKey)) {
 			votedScenarios.push(scenarioKey);
 			setVotedScenarios(votedScenarios);
+			console.log('Marked scenario as voted:', scenarioKey, 'Updated voted scenarios:', votedScenarios);
+		} else {
+			console.log('Scenario already marked as voted:', scenarioKey);
 		}
 	}
 
@@ -168,7 +175,9 @@
 
 	function updatePublicStats(stats) {
 		totalVotesEl.textContent = stats.totalVotes.toLocaleString('he-IL');
-		totalUsersEl.textContent = stats.totalUsers.toLocaleString('he-IL');
+		if (totalUsersEl) {
+			totalUsersEl.textContent = stats.totalUsers.toLocaleString('he-IL');
+		}
 	}
 
 	function updatePublicVotesDisplay(votes) {
@@ -300,7 +309,7 @@
 	}
 
 	async function updateVotesUI() {
-		// Try to get the actual vote count from API for the current scenario
+		// Update the answer-specific vote counter (votesCount) - shows votes for current scenario only
 		if (window.currentScenario) {
 			try {
 				const response = await fetch(`${API_BASE}/calculate`, {
@@ -314,7 +323,7 @@
 				
 				if (response.ok) {
 					const data = await response.json();
-					if (data.crowdData && data.crowdData.totalVotes) {
+					if (data.crowdData && data.crowdData.totalVotes !== undefined) {
 						votesCountEl.textContent = data.crowdData.totalVotes.toString();
 						return;
 					}
@@ -324,10 +333,25 @@
 			}
 		}
 		
-		// Fallback to local storage
-		const v = getVotes();
-		const total = v.tooLow + v.justRight + v.tooHigh;
-		votesCountEl.textContent = total.toString();
+		// Fallback: show 0 if no current scenario or no API data
+		votesCountEl.textContent = '0';
+	}
+
+	async function updateMainVoteCounter() {
+		// Update the main vote counter (totalVotes) - shows total votes across all scenarios
+		try {
+			const response = await fetch(`${API_BASE}/public-stats`);
+			if (response.ok) {
+				const data = await response.json();
+				totalVotesEl.textContent = data.totalVotes.toLocaleString('he-IL');
+				return;
+			}
+		} catch (error) {
+			console.log('API not available for main vote counter');
+		}
+		
+		// Fallback: show 0 if no API data
+		totalVotesEl.textContent = '0';
 	}
 
 	function baseSuggestion({ eventType, closeness, venue, location }) {
@@ -461,12 +485,15 @@
 		
 		updateCheque(finalAmount, eventType);
 		voteBox.hidden = false;
-		await updateVotesUI();
 		
 		// Store current scenario for voting (use core scenario for vote buckets, but full scenario for display)
 		window.currentScenario = coreScenario;
 		window.currentFullScenario = fullScenario;
 		window.currentAmount = finalAmount;
+		
+		// Update both vote counters
+		await updateVotesUI(); // Answer-specific counter
+		await updateMainVoteCounter(); // Main total counter
 		
 		// Check if user has already voted on this scenario
 		updateVoteButtonsState();
@@ -519,8 +546,11 @@
 			const type = btn.getAttribute('data-vote');
 			if (!type || !window.currentScenario || !window.currentAmount) return;
 			
+			console.log('Vote button clicked:', type, 'Current scenario:', window.currentScenario);
+			
 			// Check if already voted
 			if (hasVotedOnScenario(window.currentScenario)) {
+				console.log('User already voted on this scenario, showing feedback');
 				showVoteFeedback('כבר הצבעתם על התוצאה הזו', 'info');
 				return;
 			}
@@ -574,7 +604,8 @@
 				setVotes(v);
 			}
 
-			await updateVotesUI();
+			await updateVotesUI(); // Update answer-specific counter
+			await updateMainVoteCounter(); // Update main total counter
 			updateVoteButtonsState();
 			// Recalculate with new crowd adjustment
 			await calculateAndRender();
@@ -650,6 +681,7 @@
 	// Initialize UI mirrors
 	partySizeVal.textContent = partySizeInput.value;
 	updateVotesUI();
+	updateMainVoteCounter();
 	
 	// Initialize public stats
 	fetchPublicStats();

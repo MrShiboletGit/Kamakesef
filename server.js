@@ -199,6 +199,7 @@ app.post('/api/calculate', async (req, res) => {
         res.json({
             adjustedAmount,
             crowdData: {
+                totalVotes: total,
                 votes: {
                     tooLow: scenarioVote.too_low,
                     justRight: scenarioVote.just_right,
