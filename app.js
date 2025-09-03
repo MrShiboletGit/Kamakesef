@@ -122,9 +122,7 @@
 		};
 		
 		const venueNames = {
-			'home': 'בית',
-			'yard': 'חצר',
-			'synagogue': 'בית כנסת',
+			'home': 'חצר/בית/בית כנסת',
 			'hall': 'אולם',
 			'restaurant': 'מסעדה'
 		};
@@ -324,9 +322,7 @@
 		}
 		// Venue
 		switch (venue) {
-			case 'home': base -= 50; break; // בית - more intimate, lower cost
-			case 'yard': base -= 20; break; // חצר - outdoor but at home
-			case 'synagogue': base += 20; break; // בית כנסת - formal religious setting
+			case 'home': base -= 40; break; // חצר/בית/בית כנסת - home-based venues, lower cost
 			case 'hall': base += 70; break; // אולם אירועים - formal venue
 			case 'restaurant': base += 30; break; // מסעדה - dining venue
 		}
