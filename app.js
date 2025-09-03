@@ -350,12 +350,12 @@
 			case 'premium': amount *= 1.10; break;
 		}
 		
-		// Party size adjustment - compounding 75% for each additional person
-		// First person: 100%, Second: 75%, Third: 56.25%, Fourth: 42.19%, etc.
+		// Party size adjustment - compounding 80% for each additional person
+		// First person: 100%, Second: 80%, Third: 64%, Fourth: 51.2%, etc.
 		if (partySize > 1) {
 			let totalMultiplier = 1; // First person at 100%
 			for (let i = 1; i < partySize; i++) {
-				totalMultiplier += Math.pow(0.75, i);
+				totalMultiplier += Math.pow(0.80, i);
 			}
 			amount = amount * totalMultiplier;
 		}
