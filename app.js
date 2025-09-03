@@ -252,30 +252,41 @@
 
 	// Real-time polling
 	async function pollForUpdates() {
-		const currentVoteCount = await fetchPublicVotes();
-		
-		// Check for new votes
-		if (currentVoteCount > lastVoteCount && lastVoteCount > 0) {
-			const newVotes = currentVoteCount - lastVoteCount;
-			// Show notification for new votes (simplified - just show one notification)
-			if (newVotes > 0) {
-				showVoteNotification({
-					voteType: 'justRight', // Default for demo
-					amount: 500 // Default for demo
-				});
+		try {
+			// First, just check the vote count without updating the display
+			const response = await fetch(`${API_BASE}/public-stats`);
+			if (response.ok) {
+				const data = await response.json();
+				const currentVoteCount = data.totalVotes;
+				
+				// Only update if there are actually new votes
+				if (currentVoteCount > lastVoteCount && lastVoteCount > 0) {
+					const newVotes = currentVoteCount - lastVoteCount;
+					// Show notification for new votes
+					if (newVotes > 0) {
+						showVoteNotification({
+							voteType: 'justRight', // Default for demo
+							amount: 500 // Default for demo
+						});
+					}
+					// Only refresh the votes list if there are new votes
+					await fetchPublicVotes();
+				}
+				
+				lastVoteCount = currentVoteCount;
+				updatePublicStats(data);
 			}
+		} catch (error) {
+			console.log('API not available for polling');
 		}
-		
-		lastVoteCount = currentVoteCount;
-		await fetchPublicStats();
 	}
 
 	function startRealTimeUpdates() {
 		// Initial load
 		pollForUpdates();
 		
-		// Poll every 5 seconds
-		pollInterval = setInterval(pollForUpdates, 5000);
+		// Poll every 15 seconds (less frequent to reduce unnecessary checks)
+		pollInterval = setInterval(pollForUpdates, 15000);
 	}
 
 	function stopRealTimeUpdates() {
