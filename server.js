@@ -173,10 +173,27 @@ app.post('/api/calculate', async (req, res) => {
             });
         }
 
-        // Calculate crowd adjustment
+        // Calculate crowd adjustment with scaling
         const total = scenarioVote.too_low + scenarioVote.just_right + scenarioVote.too_high;
         const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
-        const factor = 1 + bias * 0.12; // Max ±12% adjustment
+        
+        // Scaling system: gradually increase max adjustment as votes increase
+        // 1-5 votes: max ±5%
+        // 6-15 votes: max ±15% 
+        // 16-30 votes: max ±30%
+        // 31+ votes: max ±50%
+        let maxAdjustment;
+        if (total <= 5) {
+            maxAdjustment = 0.05; // 5%
+        } else if (total <= 15) {
+            maxAdjustment = 0.15; // 15%
+        } else if (total <= 30) {
+            maxAdjustment = 0.30; // 30%
+        } else {
+            maxAdjustment = 0.50; // 50%
+        }
+        
+        const factor = 1 + bias * maxAdjustment;
         const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
 
         res.json({
@@ -191,6 +208,7 @@ app.post('/api/calculate', async (req, res) => {
                 },
                 bias,
                 factor,
+                maxAdjustment: Math.round(maxAdjustment * 100), // Show as percentage
                 averageAmount: Math.round(scenarioVote.total_amount / scenarioVote.count)
             }
         });
@@ -272,11 +290,24 @@ app.get('/api/analytics', async (req, res) => {
         
         if (votesError) throw votesError;
         
-        // Calculate bias trends
+        // Calculate bias trends with scaling
         const scenarioAnalysis = votes.map(vote => {
             const total = vote.too_low + vote.just_right + vote.too_high;
             const bias = total > 0 ? (vote.too_low - vote.too_high) / total : 0;
-            const factor = 1 + bias * 0.12;
+            
+            // Apply same scaling system
+            let maxAdjustment;
+            if (total <= 5) {
+                maxAdjustment = 0.05; // 5%
+            } else if (total <= 15) {
+                maxAdjustment = 0.15; // 15%
+            } else if (total <= 30) {
+                maxAdjustment = 0.30; // 30%
+            } else {
+                maxAdjustment = 0.50; // 50%
+            }
+            
+            const factor = 1 + bias * maxAdjustment;
             
             return {
                 scenario: vote.scenario_key,
@@ -334,7 +365,10 @@ function calculateOverallBias(votes) {
     if (total === 0) return { bias: 0, factor: 1, message: 'No data yet' };
     
     const bias = (totalTooLow - totalTooHigh) / total;
-    const factor = 1 + bias * 0.12;
+    
+    // Use conservative scaling for overall bias (max 20%)
+    const maxAdjustment = Math.min(0.20, 0.05 + (total / 100) * 0.15);
+    const factor = 1 + bias * maxAdjustment;
     
     return {
         bias: Math.round(bias * 100) / 100,

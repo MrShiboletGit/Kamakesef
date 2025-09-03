@@ -8,7 +8,7 @@ A stylish, interactive Hebrew web application that calculates wedding gift amoun
 - **Crowd-Sourced Data**: Real-time voting system that adjusts recommendations based on community feedback
 - **Public Vote Feed**: Shows the latest 25 votes from all users in real-time
 - **Live Notifications**: Popup notifications when new votes are cast
-- **Public Statistics**: Displays total votes and active users
+- **Public Statistics**: Displays total votes from the community
 - **Hebrew RTL Support**: Fully optimized for Hebrew text and right-to-left layout
 - **Responsive Design**: Works perfectly on desktop and mobile devices
 
@@ -16,8 +16,9 @@ A stylish, interactive Hebrew web application that calculates wedding gift amoun
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
 - **Backend**: Node.js with Express.js
-- **Deployment**: Vercel
-- **Data Storage**: JSON file (can be upgraded to database)
+- **Database**: Supabase PostgreSQL with real-time capabilities
+- **Deployment**: Vercel with serverless functions
+- **Styling**: Custom CSS with Hebrew RTL support and responsive design
 
 ## Local Development
 
@@ -73,8 +74,21 @@ The application is configured for Vercel with:
 
 1. **Base Calculation**: Starts with a minimal baseline amount
 2. **Modifiers Applied**: Adjusts based on event type, relationship, income, venue, location, and party size
-3. **Crowd Adjustment**: Uses community votes to fine-tune the final amount
-4. **Real-Time Updates**: Continuously updates based on new votes
+3. **Crowd Adjustment**: Uses community votes to fine-tune the final amount with intelligent scaling:
+   - 1-5 votes: ±5% max adjustment
+   - 6-15 votes: ±15% max adjustment  
+   - 16-30 votes: ±30% max adjustment
+   - 31+ votes: ±50% max adjustment
+4. **Real-Time Updates**: Continuously updates based on new votes stored in Supabase
+
+## Recent Updates
+
+- ✅ **Supabase Integration**: Persistent data storage with PostgreSQL database
+- ✅ **Fixed Navigation**: Proper view switching between calculator and votes
+- ✅ **Enhanced Styling**: Matching colors between voting interface and public votes
+- ✅ **Improved UX**: Better visual feedback and hover effects
+- ✅ **Production Ready**: Fully deployed on Vercel with environment variables
+- ✅ **Intelligent Scaling**: Gradual adjustment system prevents wild swings from few votes
 
 ## Contributing
 
