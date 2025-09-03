@@ -28,6 +28,14 @@
     {
       "src": "privacy.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "accessibility.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "accessibility-widget.js",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -54,6 +62,14 @@
     {
       "src": "/privacy",
       "dest": "/privacy.html"
+    },
+    {
+      "src": "/accessibility",
+      "dest": "/accessibility.html"
+    },
+    {
+      "src": "/accessibility-widget.js",
+      "dest": "/accessibility-widget.js"
     },
     {
       "src": "/(.*)",
