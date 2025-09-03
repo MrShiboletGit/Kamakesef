@@ -13,6 +13,21 @@ body {
 	padding: 32px 20px 12px;
 	text-align: center;
 }
+
+.logo-container {
+	margin-bottom: 16px;
+}
+
+.site-logo {
+	width: 64px;
+	height: 64px;
+	filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+	transition: transform 0.2s ease;
+}
+
+.site-logo:hover {
+	transform: scale(1.05);
+}
 .app-header h1 {
 	margin: 0 0 8px;
 	font-weight: 900;
