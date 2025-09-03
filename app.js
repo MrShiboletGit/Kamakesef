@@ -17,7 +17,7 @@
 
 	const votesStorageKey = 'wedding-calc-votes-v1';
 	const votedScenariosKey = 'wedding-calc-voted-scenarios-v1';
-	const API_BASE = 'http://localhost:3001/api';
+	const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api';
 	
 	// Real-time updates
 	let lastVoteCount = 0;
