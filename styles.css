@@ -448,6 +448,7 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 	font-size: 14px;
 	font-weight: 500;
 	transition: color 0.2s ease;
+	margin: 0 12px;
 }
 .footer-link:hover {
 	color: #0ea5e9;
