@@ -58,17 +58,13 @@
 
 	function generateScenarioKey(scenario) {
 		// Core factors only - these determine the vote buckets
-		const key = `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
-		console.log('Generated scenario key:', key, 'for scenario:', scenario);
-		return key;
+		return `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
 	}
 
 	function hasVotedOnScenario(scenario) {
 		const votedScenarios = getVotedScenarios();
 		const scenarioKey = generateScenarioKey(scenario);
-		const hasVoted = votedScenarios.includes(scenarioKey);
-		console.log('Checking if voted on scenario:', scenarioKey, 'Voted scenarios:', votedScenarios, 'Has voted:', hasVoted);
-		return hasVoted;
+		return votedScenarios.includes(scenarioKey);
 	}
 
 	function markScenarioAsVoted(scenario) {
@@ -77,9 +73,6 @@
 		if (!votedScenarios.includes(scenarioKey)) {
 			votedScenarios.push(scenarioKey);
 			setVotedScenarios(votedScenarios);
-			console.log('Marked scenario as voted:', scenarioKey, 'Updated voted scenarios:', votedScenarios);
-		} else {
-			console.log('Scenario already marked as voted:', scenarioKey);
 		}
 	}
 
@@ -540,17 +533,16 @@
 		}
 	}
 
-	// Voting
-	document.querySelectorAll('.vote-actions .chip').forEach(function (btn) {
-		btn.addEventListener('click', async function () {
+	// Voting - use event delegation to handle dynamically shown buttons
+	document.addEventListener('click', async function (e) {
+		// Check if clicked element is a vote button
+		if (e.target.classList.contains('chip') && e.target.hasAttribute('data-vote')) {
+			const btn = e.target;
 			const type = btn.getAttribute('data-vote');
 			if (!type || !window.currentScenario || !window.currentAmount) return;
 			
-			console.log('Vote button clicked:', type, 'Current scenario:', window.currentScenario);
-			
 			// Check if already voted
 			if (hasVotedOnScenario(window.currentScenario)) {
-				console.log('User already voted on this scenario, showing feedback');
 				showVoteFeedback('כבר הצבעתם על התוצאה הזו', 'info');
 				return;
 			}
@@ -609,7 +601,7 @@
 			updateVoteButtonsState();
 			// Recalculate with new crowd adjustment
 			await calculateAndRender();
-		});
+		}
 	});
 
 	// Vote feedback function
