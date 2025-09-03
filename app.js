@@ -446,18 +446,27 @@
 		}
 	}
 
-	function updateCheque(amount, eventType) {
+	function updateCheque(amount, eventType, isVoteImpact = false) {
 		amountEl.textContent = formatCurrency(amount);
 		amountWordsEl.textContent = shekelsToWords(amount);
 		chequeDateEl.textContent = new Date().toLocaleDateString('he-IL');
 		document.getElementById('chequeMemo').textContent = getEventMemo(eventType);
-		cheque.classList.remove('pop');
+		
+		// Remove any existing animation classes
+		cheque.classList.remove('pop', 'vote-impact');
+		
 		// force reflow for animation
 		void cheque.offsetWidth;
-		cheque.classList.add('pop');
+		
+		// Add appropriate animation class
+		if (isVoteImpact) {
+			cheque.classList.add('vote-impact');
+		} else {
+			cheque.classList.add('pop');
+		}
 	}
 
-	async function calculateAndRender() {
+	async function calculateAndRender(isVoteImpact = false) {
 		const eventType = document.getElementById('eventType').value;
 		const closeness = document.getElementById('closeness').value;
 		const partySize = Number(partySizeInput.value);
@@ -477,7 +486,7 @@
 		// Apply personal adjustments
 		const finalAmount = applyPersonalAdjustments(crowdResult.amount, { incomeTier, partySize });
 		
-		updateCheque(finalAmount, eventType);
+		updateCheque(finalAmount, eventType, isVoteImpact);
 		voteBox.hidden = false;
 		
 		// Store current scenario for voting (use core scenario for vote buckets, but full scenario for display)
@@ -576,13 +585,14 @@
 
 				if (response.ok) {
 					console.log('Vote submitted successfully');
-					// Show success feedback
-					showVoteFeedback('תודה! ההצבעה נשמרה', 'success');
 				}
 			} catch (error) {
 				console.log('API not available, storing locally');
 				showVoteFeedback('ההצבעה נשמרה מקומית', 'info');
 			}
+
+			// Store the old amount to show the impact
+			const oldAmount = window.currentAmount;
 
 			// Mark scenario as voted
 			markScenarioAsVoted(window.currentScenario);
@@ -597,11 +607,24 @@
 				setVotes(v);
 			}
 
+			// Update vote counters immediately
 			await updateVotesUI(); // Update answer-specific counter
 			await updateMainVoteCounter(); // Update main total counter
+			
+			// Recalculate with new crowd adjustment to get updated price
+			await calculateAndRender(true); // Pass true to indicate this is a vote impact update
+			
+			// Show impact feedback if price changed
+			const newAmount = window.currentAmount;
+			if (newAmount !== oldAmount) {
+				const difference = newAmount - oldAmount;
+				const changeText = difference > 0 ? `+${formatCurrency(difference)}` : formatCurrency(difference);
+				showVoteFeedback(`ההצבעה שלכם שינתה את ההמלצה ב-${changeText}`, 'success');
+			} else {
+				showVoteFeedback('תודה! ההצבעה שלכם נשמרה', 'success');
+			}
+			
 			updateVoteButtonsState();
-			// Recalculate with new crowd adjustment
-			await calculateAndRender();
 		}
 	});
 

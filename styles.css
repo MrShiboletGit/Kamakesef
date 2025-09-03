@@ -478,8 +478,18 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 .pop {
 	animation: pop .24s ease;
 }
+.vote-impact {
+	animation: voteImpact .6s ease;
+}
 @keyframes pop {
 	0% { transform: scale(0.98); opacity: 0.6; }
+	100% { transform: scale(1); opacity: 1; }
+}
+@keyframes voteImpact {
+	0% { transform: scale(0.95); opacity: 0.8; }
+	25% { transform: scale(1.05); opacity: 1; }
+	50% { transform: scale(0.98); opacity: 1; }
+	75% { transform: scale(1.02); opacity: 1; }
 	100% { transform: scale(1); opacity: 1; }
 }
 @keyframes slideIn {
