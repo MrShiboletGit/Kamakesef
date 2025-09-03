@@ -123,6 +123,7 @@
 		
 		const venueNames = {
 			'home': 'חצר/בית/בית כנסת',
+			'garden': 'גן אירועים',
 			'hall': 'אולם',
 			'restaurant': 'מסעדה'
 		};
@@ -323,7 +324,8 @@
 		// Venue
 		switch (venue) {
 			case 'home': base -= 40; break; // חצר/בית/בית כנסת - home-based venues, lower cost
-			case 'hall': base += 70; break; // אולם אירועים - formal venue
+			case 'garden': base += 40; break; // גן אירועים - outdoor event venue, mid-range
+			case 'hall': base += 70; break; // אולם אירועים - formal venue, highest cost
 			case 'restaurant': base += 30; break; // מסעדה - dining venue
 		}
 		// Location
