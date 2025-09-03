@@ -299,7 +299,32 @@
 		}
 	}
 
-	function updateVotesUI() {
+	async function updateVotesUI() {
+		// Try to get the actual vote count from API for the current scenario
+		if (window.currentScenario) {
+			try {
+				const response = await fetch(`${API_BASE}/calculate`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ 
+						scenario: window.currentScenario, 
+						baseAmount: baseSuggestion(window.currentScenario) 
+					})
+				});
+				
+				if (response.ok) {
+					const data = await response.json();
+					if (data.crowdData && data.crowdData.totalVotes) {
+						votesCountEl.textContent = data.crowdData.totalVotes.toString();
+						return;
+					}
+				}
+			} catch (error) {
+				console.log('API not available for vote count');
+			}
+		}
+		
+		// Fallback to local storage
 		const v = getVotes();
 		const total = v.tooLow + v.justRight + v.tooHigh;
 		votesCountEl.textContent = total.toString();
@@ -436,7 +461,7 @@
 		
 		updateCheque(finalAmount, eventType);
 		voteBox.hidden = false;
-		updateVotesUI();
+		await updateVotesUI();
 		
 		// Store current scenario for voting (use core scenario for vote buckets, but full scenario for display)
 		window.currentScenario = coreScenario;
@@ -480,10 +505,11 @@
 		
 		// Update vote stats message
 		const voteStats = document.querySelector('.vote-stats');
+		const currentVoteCount = document.getElementById('votesCount').textContent;
 		if (hasVoted) {
-			voteStats.innerHTML = '<strong id="votesCount">' + document.getElementById('votesCount').textContent + '</strong> הצבעות עד כה • <span style="color: #10b981;">הצבעתם על התוצאה הזו</span>';
+			voteStats.innerHTML = '<strong id="votesCount">' + currentVoteCount + '</strong> הצבעות עד כה • <span style="color: #10b981;">הצבעתם על התוצאה הזו</span>';
 		} else {
-			voteStats.innerHTML = '<strong id="votesCount">' + document.getElementById('votesCount').textContent + '</strong> הצבעות עד כה • עזרו לנו לשפר את ההמלצות';
+			voteStats.innerHTML = '<strong id="votesCount">' + currentVoteCount + '</strong> הצבעות עד כה • עזרו לנו לשפר את ההמלצות';
 		}
 	}
 
@@ -548,7 +574,7 @@
 				setVotes(v);
 			}
 
-			updateVotesUI();
+			await updateVotesUI();
 			updateVoteButtonsState();
 			// Recalculate with new crowd adjustment
 			await calculateAndRender();
