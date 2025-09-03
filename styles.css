@@ -18,14 +18,22 @@ body {
 	margin-bottom: 16px;
 }
 
+.logo-link {
+	display: inline-block;
+	text-decoration: none;
+	border-radius: 12px;
+	transition: all 0.2s ease;
+}
+
+.logo-link:hover {
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .site-logo {
 	width: 80px;
 	height: 80px;
 	transition: transform 0.2s ease;
-}
-
-.site-logo:hover {
-	transform: scale(1.05);
 }
 .app-header h1 {
 	margin: 0 0 8px;
