@@ -546,19 +546,36 @@
 	document.querySelectorAll('.nav-btn').forEach(btn => {
 		btn.addEventListener('click', function() {
 			const targetView = this.getAttribute('data-view');
+			console.log('Switching to view:', targetView);
 			
 			// Remove active class from all views and buttons
 			document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-			document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+			document.querySelectorAll('.view').forEach(v => {
+				v.classList.remove('active');
+				console.log('Removed active from:', v.id);
+			});
 			
 			// Add active class to clicked button and corresponding view
 			this.classList.add('active');
-			document.getElementById(targetView + '-view').classList.add('active');
+			const targetElement = document.getElementById(targetView + '-view');
+			if (targetElement) {
+				targetElement.classList.add('active');
+				console.log('Activated view:', targetView + '-view');
+			} else {
+				console.error('View element not found:', targetView + '-view');
+			}
+			
+			// Debug: Show current state of all views
+			document.querySelectorAll('.view').forEach(v => {
+				console.log('View', v.id, 'has active class:', v.classList.contains('active'));
+			});
 			
 			// Start/stop real-time updates based on view
 			if (targetView === 'votes') {
+				console.log('Starting real-time updates for votes');
 				startRealTimeUpdates();
 			} else {
+				console.log('Stopping real-time updates');
 				stopRealTimeUpdates();
 			}
 		});

@@ -98,15 +98,15 @@ body {
 	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 .view {
-	display: none;
+	display: none !important;
 }
 .view.active {
-	display: block;
+	display: block !important;
 }
 
 /* Calculator View Layout */
-#calculator-view {
-	display: grid;
+#calculator-view.active {
+	display: grid !important;
 	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 	gap: 20px;
 }
@@ -350,17 +350,25 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 	border-radius: 8px;
 	min-width: 100px;
 	justify-content: center;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.public-vote-badge:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .public-vote-badge.too-low {
-	background: #fef3c7;
+	background: linear-gradient(135deg, #fef3c7, #fde68a);
+	border: 2px solid #f59e0b;
 	color: #92400e;
 }
 .public-vote-badge.just-right {
-	background: #d1fae5;
+	background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+	border: 2px solid #10b981;
 	color: #065f46;
 }
 .public-vote-badge.too-high {
-	background: #fee2e2;
+	background: linear-gradient(135deg, #fee2e2, #fecaca);
+	border: 2px solid #ef4444;
 	color: #991b1b;
 }
 .empty-state {
