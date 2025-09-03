@@ -261,13 +261,14 @@
 				// On initial load (lastVoteCount is 0) or when there are new votes
 				if (lastVoteCount === 0 || currentVoteCount > lastVoteCount) {
 					if (currentVoteCount > lastVoteCount && lastVoteCount > 0) {
-						const newVotes = currentVoteCount - lastVoteCount;
-						// Show notification for new votes
-						if (newVotes > 0) {
-							showVoteNotification({
-								voteType: 'justRight', // Default for demo
-								amount: 500 // Default for demo
-							});
+						// Get the latest vote data for notification
+						const votesResponse = await fetch(`${API_BASE}/public-votes`);
+						if (votesResponse.ok) {
+							const votesData = await votesResponse.json();
+							if (votesData.votes && votesData.votes.length > 0) {
+								// Show notification for the most recent vote
+								showVoteNotification(votesData.votes[0]);
+							}
 						}
 					}
 					// Load/refresh the votes list
