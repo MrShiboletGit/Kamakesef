@@ -319,13 +319,13 @@
 			case 'close': base += 160; break;
 			case 'inner': base += 250; break;
 		}
-		// Income tier
+		// Income tier (reduced impact)
 		switch (incomeTier) {
-			case 'low': base *= 0.85; break;
+			case 'low': base *= 0.95; break;
 			case 'mid': base *= 1.0; break;
-			case 'high': base *= 1.08; break;
-			case 'veryHigh': base *= 1.15; break;
-			case 'premium': base *= 1.25; break;
+			case 'high': base *= 1.03; break;
+			case 'veryHigh': base *= 1.06; break;
+			case 'premium': base *= 1.10; break;
 		}
 		// Venue
 		switch (venue) {
