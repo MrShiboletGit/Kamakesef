@@ -319,9 +319,9 @@
 			case 'close': base += 160; break;
 			case 'inner': base += 250; break;
 		}
-		// Income tier (reduced impact)
+		// Income tier (reduced impact for higher tiers)
 		switch (incomeTier) {
-			case 'low': base *= 0.95; break;
+			case 'low': base *= 0.85; break;
 			case 'mid': base *= 1.0; break;
 			case 'high': base *= 1.03; break;
 			case 'veryHigh': base *= 1.06; break;
