@@ -20,6 +20,10 @@
     {
       "src": "logo.png",
       "use": "@vercel/static"
+    },
+    {
+      "src": "ads.txt",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -38,6 +42,10 @@
     {
       "src": "/logo.png",
       "dest": "/logo.png"
+    },
+    {
+      "src": "/ads.txt",
+      "dest": "/ads.txt"
     },
     {
       "src": "/(.*)",
