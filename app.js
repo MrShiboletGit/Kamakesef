@@ -343,7 +343,7 @@
 	function applyPersonalAdjustments(amount, { incomeTier, partySize }) {
 		// Income tier adjustment
 		switch (incomeTier) {
-			case 'low': amount *= 0.85; break;
+			case 'low': amount *= 0.9; break;
 			case 'mid': amount *= 1.0; break;
 			case 'high': amount *= 1.03; break;
 			case 'veryHigh': amount *= 1.06; break;
