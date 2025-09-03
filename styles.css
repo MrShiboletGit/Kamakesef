@@ -431,6 +431,19 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 }
 
 .app-footer { text-align: center; color: #64748b; padding: 20px; }
+.footer-links {
+	margin: 12px 0;
+}
+.footer-link {
+	color: #64748b;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+.footer-link:hover {
+	color: #0ea5e9;
+}
 .creator-credit {
 	margin-top: 12px;
 	font-size: 12px;
