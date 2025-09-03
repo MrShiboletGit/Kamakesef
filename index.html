@@ -47,18 +47,18 @@
 				<!-- קרבה -->
 				<label for="closeness">כמה אתם קרובים?</label>
 				<select id="closeness" required>
-					<option value="distant">מכרים</option>
-					<option value="distantFamily">משפחה רחוקה</option>
-					<option value="friend">חברים</option>
-					<option value="close">קרובים</option>
 					<option value="inner">משפחה קרובה</option>
+					<option value="close">קרובים</option>
+					<option value="friend">חברים</option>
+					<option value="distantFamily">משפחה רחוקה</option>
+					<option value="distant">מכרים</option>
 				</select>
 
 				<!-- כמה מגיעים -->
 				<label for="partySize">כמה אתם מגיעים?</label>
 				<div class="inline-input">
-					<input type="range" id="partySize" min="1" max="6" step="1" value="2" />
-					<span id="partySizeVal" class="pill">2</span>
+					<input type="range" id="partySize" min="1" max="6" step="1" value="1" />
+					<span id="partySizeVal" class="pill">1</span>
 				</div>
 
 				<!-- מדרגות שכר -->
@@ -138,6 +138,11 @@
 
 	<footer class="app-footer">
 		<p>מונע על ידי חוכמת ההמונים — נתונים נשמרים בדפדפן שלכם כרגע.</p>
+		<div class="creator-credit">
+			<p>Created by <a href="https://www.youtube.com/@SHIBOLETTech" target="_blank">MrShibolet</a> • 
+			<a href="https://www.tiktok.com/@mrshibolet" target="_blank">TikTok</a> • 
+			<a href="https://instagram.com/mrshibolet" target="_blank">Instagram</a></p>
+		</div>
 	</footer>
 
 	<!-- Live Vote Notifications -->
