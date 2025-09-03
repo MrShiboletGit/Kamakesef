@@ -1,0 +1,31 @@
+{
+  "name": "wedding-gift-calculator",
+  "version": "1.0.0",
+  "description": "Hebrew wedding gift calculator with crowd-sourced pricing",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo 'No build step needed'",
+    "dev": "concurrently \"npm run server\" \"npm run dev:client\"",
+    "dev:client": "npx live-server --port=3000 --open=/index.html",
+    "server": "node server.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\""
+  },
+  "keywords": [
+    "wedding",
+    "calculator",
+    "hebrew",
+    "gift"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.4",
+    "concurrently": "^8.2.2"
+  }
+}

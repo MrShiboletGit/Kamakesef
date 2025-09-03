@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>כמה כסף? — המחשבון לחתונות ואירועים</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+	<header class="app-header">
+		<h1>כמה כסף?</h1>
+		<p class="subtitle">המחשבון שיגיד לכם כמה לתת כשאתם הולכים לחתונה, לבת מצווה ולכל אירוע</p>
+		<p class="subtitle-info">כלי חינמי המשתמש בנתוני הקהל כדי להגיע לתוצאה הטובה ביותר</p>
+		<div class="public-stats">
+			<div class="stat-item">
+				<span class="stat-number" id="totalVotes">0</span>
+				<span class="stat-label">הצבעות ציבוריות</span>
+			</div>
+			<div class="stat-item">
+				<span class="stat-number" id="totalUsers">0</span>
+				<span class="stat-label">משתמשים פעילים</span>
+			</div>
+		</div>
+	</header>
+
+	<main class="container">
+		<!-- Navigation -->
+		<div class="nav-buttons">
+			<button class="nav-btn active" data-view="calculator">מחשבון</button>
+			<button class="nav-btn" data-view="votes">הצבעות</button>
+		</div>
+
+		<!-- Calculator View -->
+		<div class="view active" id="calculator-view">
+		<section class="card form-card" aria-labelledby="formTitle">
+			<h2 id="formTitle">פרטי האירוע</h2>
+			<form id="calcForm" class="form-grid">
+				<!-- סוג האירוע -->
+				<label for="eventType">סוג האירוע</label>
+				<select id="eventType" required>
+					<option value="wedding">חתונה</option>
+					<option value="bar-bat">בר/בת מצווה</option>
+					<option value="brit">ברית/בריתה</option>
+					<option value="other">אירוע אחר</option>
+				</select>
+
+				<!-- קרבה -->
+				<label for="closeness">כמה אתם קרובים?</label>
+				<select id="closeness" required>
+					<option value="distant">מכרים</option>
+					<option value="distantFamily">משפחה רחוקה</option>
+					<option value="friend">חברים</option>
+					<option value="close">קרובים</option>
+					<option value="inner">משפחה קרובה</option>
+				</select>
+
+				<!-- כמה מגיעים -->
+				<label for="partySize">כמה אתם מגיעים?</label>
+				<div class="inline-input">
+					<input type="range" id="partySize" min="1" max="6" step="1" value="2" />
+					<span id="partySizeVal" class="pill">2</span>
+				</div>
+
+				<!-- מדרגות שכר -->
+				<label for="incomeTier">מדרגת השכר שלך</label>
+				<select id="incomeTier" required>
+					<option value="low">עד 5,000 שקל בחודש</option>
+					<option value="mid" selected>5,000-10,000 שקל בחודש</option>
+					<option value="high">10,000-16,000 שקל בחודש</option>
+					<option value="veryHigh">16,000-20,000 שקל בחודש</option>
+					<option value="premium">מעל 20,000 שקל בחודש</option>
+				</select>
+
+				<!-- איפה חוגגים -->
+				<label for="venue">איפה חוגגים?</label>
+				<select id="venue" required>
+					<option value="garden">גן אירועים</option>
+					<option value="hall">אולם אירועים</option>
+					<option value="home">בית/חצר</option>
+					<option value="restaurant">מסעדה</option>
+				</select>
+
+				<!-- מיקום האירוע -->
+				<label for="location">מיקום האירוע</label>
+				<select id="location" required>
+					<option value="center">מרכז</option>
+					<option value="north">צפון</option>
+					<option value="south">דרום</option>
+					<option value="jerusalem">ירושלים</option>
+				</select>
+
+				<!-- כפתור חישוב -->
+				<button class="primary" id="calcBtn" type="submit">כמה לתת?</button>
+			</form>
+		</section>
+
+		<section class="card result-card" aria-live="polite">
+			<h2>התוצאה שלכם</h2>
+			<div class="cheque" id="cheque">
+				<div class="cheque-header">
+					<span>צ'ק מתנה</span>
+					<span id="chequeDate"></span>
+				</div>
+				<div class="cheque-body">
+					<div class="amount" id="amount">₪—</div>
+					<div class="amount-words" id="amountWords">—</div>
+					<div class="memo" id="chequeMemo">לכבוד: שמחה</div>
+				</div>
+			</div>
+
+			<div class="vote" id="voteBox" hidden>
+				<p class="vote-title">מה דעתכם על ההצעה?</p>
+				<p class="vote-subtitle">אל תשכחו לדרג! ההצבעה שלכם עוזרת לנו לשפר את ההמלצות לכולם</p>
+				<div class="vote-actions">
+					<button class="chip" data-vote="tooLow">📉 נמוך מדי</button>
+					<button class="chip" data-vote="justRight">✅ מדויק</button>
+					<button class="chip" data-vote="tooHigh">📈 גבוה מדי</button>
+				</div>
+				<p class="vote-stats"><strong id="votesCount">0</strong> הצבעות עד כה • עזרו לנו לשפר את ההמלצות</p>
+			</div>
+		</section>
+		</div>
+
+		<!-- Votes View -->
+		<div class="view" id="votes-view">
+			<section class="card public-votes-card">
+				<h2>הצבעות ציבוריות</h2>
+				<p class="votes-subtitle">הצבעות אחרונות מהקהילה - עזרו לנו לשפר את ההמלצות</p>
+				<div class="public-votes-list" id="publicVotesList">
+					<div class="empty-state" id="emptyState">
+						<p>אין הצבעות עדיין</p>
+						<p>השתמשו במחשבון כדי להתחיל להצביע</p>
+					</div>
+				</div>
+			</section>
+		</div>
+	</main>
+
+	<footer class="app-footer">
+		<p>מונע על ידי חוכמת ההמונים — נתונים נשמרים בדפדפן שלכם כרגע.</p>
+	</footer>
+
+	<!-- Live Vote Notifications -->
+	<div class="vote-notifications" id="voteNotifications"></div>
+
+	<script src="app.js"></script>
+</body>
+</html>
+
+
