@@ -428,10 +428,16 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 .creator-credit a {
 	color: #64748b;
 	text-decoration: none;
-	transition: color 0.2s ease;
+	transition: all 0.2s ease;
+	display: inline-block;
 }
 .creator-credit a:hover {
 	color: #0ea5e9;
+	transform: scale(1.1);
+}
+.creator-credit a[title] {
+	font-size: 14px;
+	margin: 0 2px;
 }
 
 /* Micro interactions */

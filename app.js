@@ -178,7 +178,9 @@
 		}
 		
 		emptyState.style.display = 'none';
-		publicVotesList.innerHTML = '';
+		
+		// Create a temporary container to build the new content
+		const tempContainer = document.createElement('div');
 		
 		votes.forEach((vote, index) => {
 			const voteItem = document.createElement('div');
@@ -209,8 +211,12 @@
 				</div>
 			`;
 			
-			publicVotesList.appendChild(voteItem);
+			tempContainer.appendChild(voteItem);
 		});
+		
+		// Replace content in one operation to minimize visual disruption
+		publicVotesList.innerHTML = '';
+		publicVotesList.appendChild(tempContainer);
 	}
 
 	function showVoteNotification(vote) {
