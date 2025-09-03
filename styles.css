@@ -312,10 +312,7 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 .public-vote-item:last-child {
 	border-bottom: none;
 }
-.public-vote-item.new {
-	background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-	border-left: 4px solid #0ea5e9;
-}
+
 .public-vote-left {
 	flex: 1;
 }
@@ -436,8 +433,9 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 	transform: scale(1.1);
 }
 .creator-credit a[title] {
-	font-size: 14px;
-	margin: 0 2px;
+	font-size: 16px;
+	margin: 0 4px;
+	text-decoration: none;
 }
 
 /* Micro interactions */

@@ -185,7 +185,6 @@
 		votes.forEach((vote, index) => {
 			const voteItem = document.createElement('div');
 			voteItem.className = 'public-vote-item';
-			if (index < 3) voteItem.classList.add('new'); // Mark first 3 as new
 			
 			const voteText = {
 				'tooLow': '📉 נמוך מדי',
