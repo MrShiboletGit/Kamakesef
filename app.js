@@ -350,10 +350,14 @@
 			case 'premium': amount *= 1.10; break;
 		}
 		
-		// Party size adjustment - first person is full amount, each additional person is 75%
+		// Party size adjustment - compounding 75% for each additional person
+		// First person: 100%, Second: 75%, Third: 56.25%, Fourth: 42.19%, etc.
 		if (partySize > 1) {
-			const additionalPeople = partySize - 1;
-			amount += (amount * 0.75 * additionalPeople);
+			let totalMultiplier = 1; // First person at 100%
+			for (let i = 1; i < partySize; i++) {
+				totalMultiplier += Math.pow(0.75, i);
+			}
+			amount = amount * totalMultiplier;
 		}
 		
 		// Round to nearest 10
