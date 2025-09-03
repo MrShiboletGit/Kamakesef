@@ -135,7 +135,7 @@
 			'jerusalem': 'ירושלים'
 		};
 		
-		return `${eventNames[scenario.eventType]} • ${closenessNames[scenario.closeness]} • ${scenario.partySize} אנשים • ${venueNames[scenario.venue]} • ${locationNames[scenario.location]}`;
+		return `${eventNames[scenario.eventType]} • ${closenessNames[scenario.closeness]} • ${venueNames[scenario.venue]} • ${locationNames[scenario.location]}`;
 	}
 
 	// Public vote functions
