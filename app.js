@@ -431,7 +431,8 @@
 		if (total === 0) return { amount: baseAmount, crowdData: null };
 		
 		const bias = (v.tooLow - v.tooHigh) / total;
-		const factor = 1 + bias * 0.12;
+		// Use a more noticeable bias for local fallback
+		const factor = 1 + bias * 0.25;
 		const adjusted = Math.round(baseAmount * factor / 10) * 10;
 		return { amount: Math.max(0, adjusted), crowdData: null };
 	}

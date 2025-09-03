@@ -173,10 +173,27 @@ app.post('/api/calculate', async (req, res) => {
             });
         }
 
-        // Calculate crowd adjustment
+        // Calculate crowd adjustment with scaling
         const total = scenarioVote.too_low + scenarioVote.just_right + scenarioVote.too_high;
         const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
-        const factor = 1 + bias * 0.12; // Max ±12% adjustment
+        
+        // Scaling system: gradually increase max adjustment as votes increase
+        // 1-3 votes: max ±15%
+        // 4-8 votes: max ±25% 
+        // 9-20 votes: max ±40%
+        // 21+ votes: max ±60%
+        let maxAdjustment;
+        if (total <= 3) {
+            maxAdjustment = 0.15; // 15%
+        } else if (total <= 8) {
+            maxAdjustment = 0.25; // 25%
+        } else if (total <= 20) {
+            maxAdjustment = 0.40; // 40%
+        } else {
+            maxAdjustment = 0.60; // 60%
+        }
+        
+        const factor = 1 + bias * maxAdjustment;
         const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
 
         res.json({

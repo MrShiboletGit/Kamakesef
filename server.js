@@ -178,19 +178,19 @@ app.post('/api/calculate', async (req, res) => {
         const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
         
         // Scaling system: gradually increase max adjustment as votes increase
-        // 1-5 votes: max ±5%
-        // 6-15 votes: max ±15% 
-        // 16-30 votes: max ±30%
-        // 31+ votes: max ±50%
+        // 1-3 votes: max ±15%
+        // 4-8 votes: max ±25% 
+        // 9-20 votes: max ±40%
+        // 21+ votes: max ±60%
         let maxAdjustment;
-        if (total <= 5) {
-            maxAdjustment = 0.05; // 5%
-        } else if (total <= 15) {
+        if (total <= 3) {
             maxAdjustment = 0.15; // 15%
-        } else if (total <= 30) {
-            maxAdjustment = 0.30; // 30%
+        } else if (total <= 8) {
+            maxAdjustment = 0.25; // 25%
+        } else if (total <= 20) {
+            maxAdjustment = 0.40; // 40%
         } else {
-            maxAdjustment = 0.50; // 50%
+            maxAdjustment = 0.60; // 60%
         }
         
         const factor = 1 + bias * maxAdjustment;
