@@ -17,7 +17,7 @@
 
 	const votesStorageKey = 'wedding-calc-votes-v1';
 	const votedScenariosKey = 'wedding-calc-voted-scenarios-v1';
-	const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api';
+	const API_BASE = 'https://kamakesef.vercel.app/api';
 	
 	// Real-time updates
 	let lastVoteCount = 0;
@@ -56,6 +56,8 @@
 		localStorage.setItem(votedScenariosKey, JSON.stringify(scenarios));
 	}
 
+
+
 	function generateScenarioKey(scenario) {
 		// Core factors only - these determine the vote buckets
 		return `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
@@ -84,15 +86,19 @@
 		}
 	}
 
-	function addToVoteHistory(scenario, amount, voteType) {
+	function addToVoteHistory(scenario, amount, voteType, impact = 0) {
 		const history = getVoteHistory();
+		
 		const historyItem = {
 			timestamp: new Date().toISOString(),
 			scenario: scenario,
 			amount: amount,
 			voteType: voteType,
+			impact: impact, // Store the price impact of this vote
 			scenarioKey: generateScenarioKey(scenario)
 		};
+		
+		console.log('Storing vote in history:', historyItem);
 		
 		history.unshift(historyItem); // Add to beginning
 		
@@ -102,8 +108,9 @@
 		}
 		
 		localStorage.setItem('wedding-calc-vote-history-v1', JSON.stringify(history));
-		updateVoteHistoryDisplay();
+		console.log('Vote history updated, total items:', history.length);
 	}
+
 
 	function formatScenarioDisplay(scenario) {
 		const eventNames = {
@@ -142,14 +149,18 @@
 	// Public vote functions
 	async function fetchPublicVotes() {
 		try {
+			console.log('Fetching public votes from API...');
 			const response = await fetch(`${API_BASE}/public-votes`);
 			if (response.ok) {
 				const data = await response.json();
+				console.log('Public votes API response:', data);
 				updatePublicVotesDisplay(data.votes);
 				return data.totalVotes;
+			} else {
+				console.log('Public votes API failed:', response.status, response.statusText);
 			}
 		} catch (error) {
-			console.log('API not available for public votes');
+			console.log('API not available for public votes:', error);
 		}
 		return 0;
 	}
@@ -167,9 +178,9 @@
 	}
 
 	function updatePublicStats(stats) {
-		totalVotesEl.textContent = stats.totalVotes.toLocaleString('he-IL');
+		animateCountUp(totalVotesEl, stats.totalVotes);
 		if (totalUsersEl) {
-			totalUsersEl.textContent = stats.totalUsers.toLocaleString('he-IL');
+			animateCountUp(totalUsersEl, stats.totalUsers);
 		}
 	}
 
@@ -203,6 +214,15 @@
 				minute: '2-digit'
 			});
 			
+			// Format impact display
+			let impactDisplay = '';
+			if (vote.impact !== undefined && vote.impact !== 0) {
+				const impactText = vote.impact > 0 ? `+${formatCurrency(vote.impact)}` : formatCurrency(vote.impact);
+				impactDisplay = ` • ${impactText}`;
+			} else if (vote.impact === 0) {
+				impactDisplay = ' • +0 ₪';
+			}
+
 			voteItem.innerHTML = `
 				<div class="public-vote-left">
 					<div class="public-vote-scenario">${formatScenarioDisplay(vote.scenario)}</div>
@@ -210,7 +230,7 @@
 					<div class="public-vote-time">${timeAgo}</div>
 				</div>
 				<div class="public-vote-right">
-					<div class="public-vote-badge ${vote.voteType}">${voteText[vote.voteType]}</div>
+					<div class="public-vote-badge ${vote.voteType}">${voteText[vote.voteType]}${impactDisplay}</div>
 				</div>
 			`;
 			
@@ -301,8 +321,39 @@
 		}
 	}
 
+	// Count-up animation function
+	function animateCountUp(element, targetValue, duration = 800) {
+		// Clear any existing animation for this element
+		if (element._animationTimer) {
+			clearInterval(element._animationTimer);
+		}
+		
+		const startValue = parseInt(element.textContent) || 0;
+		if (startValue === targetValue) {
+			return; // No animation needed if values are the same
+		}
+		
+		const increment = (targetValue - startValue) / (duration / 16); // 60fps
+		let currentValue = startValue;
+		
+		element._animationTimer = setInterval(() => {
+			currentValue += increment;
+			if ((increment > 0 && currentValue >= targetValue) || (increment < 0 && currentValue <= targetValue)) {
+				currentValue = targetValue;
+				clearInterval(element._animationTimer);
+				element._animationTimer = null;
+			}
+			element.textContent = Math.floor(currentValue).toLocaleString('he-IL');
+		}, 16);
+	}
+
 	async function updateVotesUI() {
 		// Update the answer-specific vote counter (votesCount) - shows votes for current scenario only
+		if (!votesCountEl) {
+			console.error('votesCountEl element not found!');
+			return;
+		}
+		
 		if (window.currentScenario) {
 			try {
 				const response = await fetch(`${API_BASE}/calculate`, {
@@ -317,7 +368,7 @@
 				if (response.ok) {
 					const data = await response.json();
 					if (data.crowdData && data.crowdData.totalVotes !== undefined) {
-						votesCountEl.textContent = data.crowdData.totalVotes.toString();
+						animateCountUp(votesCountEl, data.crowdData.totalVotes);
 						return;
 					}
 				}
@@ -327,7 +378,7 @@
 		}
 		
 		// Fallback: show 0 if no current scenario or no API data
-		votesCountEl.textContent = '0';
+		animateCountUp(votesCountEl, 0);
 	}
 
 	async function updateMainVoteCounter() {
@@ -336,7 +387,7 @@
 			const response = await fetch(`${API_BASE}/public-stats`);
 			if (response.ok) {
 				const data = await response.json();
-				totalVotesEl.textContent = data.totalVotes.toLocaleString('he-IL');
+				animateCountUp(totalVotesEl, data.totalVotes);
 				return;
 			}
 		} catch (error) {
@@ -344,15 +395,15 @@
 		}
 		
 		// Fallback: show 0 if no API data
-		totalVotesEl.textContent = '0';
+		animateCountUp(totalVotesEl, 0);
 	}
 
 	function baseSuggestion({ eventType, closeness, venue, location }) {
 		let base = 200; // minimal baseline
 		// Event type modifier
 		switch (eventType) {
-			case 'wedding': base += 150; break;
-			case 'bar-bat': base += 80; break;
+			case 'wedding': base += 120; break;
+			case 'bar-bat': base += 20; break;
 			case 'brit': base += 50; break;
 			default: base -= 40; break;
 		}
@@ -373,7 +424,7 @@
 		}
 		// Location
 		switch (location) {
-			case 'center': base += 50; break; // higher for center
+			case 'center': base += 40; break; // higher for center
 			case 'north': base += 20; break; // slightly higher for north
 			case 'south': base += 0; break; // no change for south
 			case 'jerusalem': base += 30; break; // higher for Jerusalem
@@ -505,9 +556,21 @@
 		partySizeVal.textContent = partySizeInput.value;
 	});
 
+	// Debounce mechanism to prevent multiple rapid calls
+	let calculateTimeout = null;
+	
 	form.addEventListener('submit', function (e) {
 		e.preventDefault();
-		calculateAndRender();
+		
+		// Clear any existing timeout
+		if (calculateTimeout) {
+			clearTimeout(calculateTimeout);
+		}
+		
+		// Set a new timeout
+		calculateTimeout = setTimeout(() => {
+			calculateAndRender();
+		}, 100); // 100ms debounce
 	});
 
 	// Update vote buttons state
@@ -520,22 +583,44 @@
 				btn.disabled = true;
 				btn.style.opacity = '0.6';
 				btn.style.cursor = 'not-allowed';
-				btn.title = 'כבר הצבעתם על התוצאה הזו';
+				btn.title = 'כבר הצבעתם על התרחיש הזה';
 			} else {
 				btn.disabled = false;
 				btn.style.opacity = '1';
 				btn.style.cursor = 'pointer';
-				btn.title = '';
+				btn.title = 'לחצו כדי להצביע';
 			}
 		});
 		
-		// Update vote stats message
+		// Update vote stats message - DON'T recreate the votesCount element, just update the text
 		const voteStats = document.querySelector('.vote-stats');
-		const currentVoteCount = document.getElementById('votesCount').textContent;
+		const votesCountEl = document.getElementById('votesCount');
 		if (hasVoted) {
-			voteStats.innerHTML = '<strong id="votesCount">' + currentVoteCount + '</strong> הצבעות עד כה • <span style="color: #10b981;">הצבעתם על התוצאה הזו</span>';
+			// Only update the text after the strong tag, preserve the votesCount element
+			const textNode = voteStats.childNodes[1]; // The text node after the strong element
+			if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+				textNode.textContent = ' הצבעות עד כה על אירוע מסוג זה • ';
+			}
+			// Add or update the "voted" span
+			let votedSpan = voteStats.querySelector('.voted-message');
+			if (!votedSpan) {
+				votedSpan = document.createElement('span');
+				votedSpan.className = 'voted-message';
+				votedSpan.style.color = '#10b981';
+				voteStats.appendChild(votedSpan);
+			}
+			votedSpan.textContent = 'הצבעתם על התרחיש הזה';
 		} else {
-			voteStats.innerHTML = '<strong id="votesCount">' + currentVoteCount + '</strong> הצבעות עד כה • עזרו לנו לשפר את ההמלצות';
+			// Only update the text after the strong tag, preserve the votesCount element
+			const textNode = voteStats.childNodes[1]; // The text node after the strong element
+			if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+				textNode.textContent = ' הצבעות עד כה על אירוע מסוג זה • עזרו לנו לשפר את ההמלצות';
+			}
+			// Remove the "voted" span if it exists
+			const votedSpan = voteStats.querySelector('.voted-message');
+			if (votedSpan) {
+				votedSpan.remove();
+			}
 		}
 	}
 
@@ -547,9 +632,9 @@
 			const type = btn.getAttribute('data-vote');
 			if (!type || !window.currentScenario || !window.currentAmount) return;
 			
-			// Check if already voted
+			// Check if already voted - if so, block additional votes
 			if (hasVotedOnScenario(window.currentScenario)) {
-				showVoteFeedback('כבר הצבעתם על התוצאה הזו', 'info');
+				showVoteFeedback('כבר הצבעתם על התרחיש הזה', 'info');
 				return;
 			}
 
@@ -572,11 +657,10 @@
 			// Calculate the base amount (before crowd adjustment) for voting
 			const baseAmount = baseSuggestion(window.currentScenario);
 
-			// Mark scenario as voted
-			markScenarioAsVoted(window.currentScenario);
-
-			// Add to vote history (use base amount for consistency)
-			addToVoteHistory(window.currentScenario, baseAmount, type);
+			// Mark scenario as voted (only if not already voted)
+			if (!hasVotedOnScenario(window.currentScenario)) {
+				markScenarioAsVoted(window.currentScenario);
+			}
 
 			// Also store locally as backup
 			const v = getVotes();
@@ -585,48 +669,70 @@
 				setVotes(v);
 			}
 
-			// Submit vote to API with base amount
+			// Submit vote to API
 			try {
 				const response = await fetch(`${API_BASE}/vote`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
-						scenario: window.currentScenario, // Core scenario for vote buckets
-						fullScenario: window.currentFullScenario, // Full scenario for display
+						scenario: window.currentScenario,
+						fullScenario: window.currentFullScenario,
 						voteType: type,
-						amount: baseAmount // Use base amount instead of current amount
+						amount: window.currentAmount
 					})
 				});
 
 				if (response.ok) {
 					console.log('Vote submitted successfully');
+				} else {
+					console.log('Vote submission failed:', response.status, response.statusText);
+					showVoteFeedback('שגיאה בשליחת ההצבעה לשרת', 'error');
 				}
 			} catch (error) {
-				console.log('API not available, storing locally');
+				console.log('API not available, storing locally:', error);
 				showVoteFeedback('ההצבעה נשמרה מקומית', 'info');
 			}
 
-			// Update vote counters immediately
-			await updateVotesUI(); // Update answer-specific counter
-			await updateMainVoteCounter(); // Update main total counter
-			
 			// Recalculate with new crowd adjustment to get updated price
 			const newAmount = await calculateAndRender(true); // Pass true to indicate this is a vote impact update
 			
-			// Show impact feedback if price changed
+			// Calculate the impact of this vote
+			const impact = newAmount - oldAmount;
+			
+			// Add to vote history with impact (use the final amount the user actually saw)
+			console.log('Adding to vote history:', {
+				scenario: window.currentScenario,
+				amount: window.currentAmount,
+				voteType: type,
+				impact: impact
+			});
+			addToVoteHistory(window.currentScenario, window.currentAmount, type, impact);
+			
+			// Update vote counters after recalculation with a small delay to ensure API processing
+			setTimeout(async () => {
+				await updateVotesUI(); // Update answer-specific counter
+				await updateMainVoteCounter(); // Update main total counter
+			}, 500);
+			
+			// Show enhanced impact feedback
 			console.log('Price change check:', { 
 				oldAmount, 
 				newAmount, 
-				difference: newAmount - oldAmount,
+				difference: impact,
 				scenario: window.currentScenario,
 				voteType: type
 			});
-			if (newAmount !== oldAmount) {
-				const difference = newAmount - oldAmount;
-				const changeText = difference > 0 ? `+${formatCurrency(difference)}` : formatCurrency(difference);
-				showVoteFeedback(`ההצבעה שלכם שינתה את ההמלצה ב-${changeText}`, 'success');
+			
+			// Enhanced vote impact display
+			if (impact !== 0) {
+				const changeText = impact > 0 ? `+${formatCurrency(impact)}` : formatCurrency(impact);
+				const impactMessage = `🎯 ההצבעה שלכם השפיעה! ${changeText} • ${formatCurrency(oldAmount)} → ${formatCurrency(newAmount)}`;
+				showVoteFeedback(impactMessage, 'success');
+				
+				// Add visual highlight to the amount change
+				highlightAmountChange(oldAmount, newAmount);
 			} else {
-				showVoteFeedback('תודה! ההצבעה שלכם נשמרה', 'success');
+				showVoteFeedback('✅ תודה! ההצבעה שלכם נשמרה', 'success');
 			}
 			
 			updateVoteButtonsState();
@@ -657,6 +763,22 @@
 		setTimeout(() => {
 			feedback.style.transform = 'translateX(100%)';
 			setTimeout(() => document.body.removeChild(feedback), 300);
+		}, 2000);
+	}
+
+	// Visual highlight for amount changes
+	function highlightAmountChange(oldAmount, newAmount) {
+		const amountEl = document.getElementById('amount');
+		const amountWordsEl = document.getElementById('amountWords');
+		
+		// Add highlight class
+		amountEl.classList.add('amount-change-highlight');
+		amountWordsEl.classList.add('amount-change-highlight');
+		
+		// Remove highlight after animation
+		setTimeout(() => {
+			amountEl.classList.remove('amount-change-highlight');
+			amountWordsEl.classList.remove('amount-change-highlight');
 		}, 2000);
 	}
 
@@ -706,6 +828,24 @@
 	
 	// Initialize public stats
 	fetchPublicStats();
+	
+	// Test API connection
+	async function testAPIConnection() {
+		try {
+			console.log('Testing API connection...');
+			const response = await fetch(`${API_BASE}/public-stats`);
+			if (response.ok) {
+				const data = await response.json();
+				console.log('API connection successful:', data);
+			} else {
+				console.log('API connection failed:', response.status, response.statusText);
+			}
+		} catch (error) {
+			console.log('API connection error:', error);
+		}
+	}
+	
+	testAPIConnection();
 })();
 
 

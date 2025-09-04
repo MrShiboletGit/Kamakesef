@@ -1,0 +1,209 @@
+warning: in the working copy of 'app.js', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/app.js b/app.js[m
+[1mindex 5b30346..a70056d 100644[m
+[1m--- a/app.js[m
+[1m+++ b/app.js[m
+[36m@@ -17,7 +17,7 @@[m
+ [m
+ 	const votesStorageKey = 'wedding-calc-votes-v1';[m
+ 	const votedScenariosKey = 'wedding-calc-voted-scenarios-v1';[m
+[31m-	const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api';[m
+[32m+[m	[32mconst API_BASE = 'https://kamakesef.vercel.app/api';[m
+ 	[m
+ 	// Real-time updates[m
+ 	let lastVoteCount = 0;[m
+[36m@@ -56,6 +56,8 @@[m
+ 		localStorage.setItem(votedScenariosKey, JSON.stringify(scenarios));[m
+ 	}[m
+ [m
+[32m+[m
+[32m+[m
+ 	function generateScenarioKey(scenario) {[m
+ 		// Core factors only - these determine the vote buckets[m
+ 		return `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;[m
+[36m@@ -84,16 +86,20 @@[m
+ 		}[m
+ 	}[m
+ [m
+[31m-	function addToVoteHistory(scenario, amount, voteType) {[m
+[32m+[m	[32mfunction addToVoteHistory(scenario, amount, voteType, impact = 0) {[m
+ 		const history = getVoteHistory();[m
+[32m+[m[41m		[m
+ 		const historyItem = {[m
+ 			timestamp: new Date().toISOString(),[m
+ 			scenario: scenario,[m
+ 			amount: amount,[m
+ 			voteType: voteType,[m
+[32m+[m			[32mimpact: impact, // Store the price impact of this vote[m
+ 			scenarioKey: generateScenarioKey(scenario)[m
+ 		};[m
+ 		[m
+[32m+[m		[32mconsole.log('Storing vote in history:', historyItem);[m
+[32m+[m[41m		[m
+ 		history.unshift(historyItem); // Add to beginning[m
+ 		[m
+ 		// Keep only last 20 items[m
+[36m@@ -102,9 +108,10 @@[m
+ 		}[m
+ 		[m
+ 		localStorage.setItem('wedding-calc-vote-history-v1', JSON.stringify(history));[m
+[31m-		updateVoteHistoryDisplay();[m
+[32m+[m		[32mconsole.log('Vote history updated, total items:', history.length);[m
+ 	}[m
+ [m
+[32m+[m
+ 	function formatScenarioDisplay(scenario) {[m
+ 		const eventNames = {[m
+ 			'wedding': 'חתונה',[m
+[36m@@ -142,14 +149,18 @@[m
+ 	// Public vote functions[m
+ 	async function fetchPublicVotes() {[m
+ 		try {[m
+[32m+[m			[32mconsole.log('Fetching public votes from API...');[m
+ 			const response = await fetch(`${API_BASE}/public-votes`);[m
+ 			if (response.ok) {[m
+ 				const data = await response.json();[m
+[32m+[m				[32mconsole.log('Public votes API response:', data);[m
+ 				updatePublicVotesDisplay(data.votes);[m
+ 				return data.totalVotes;[m
+[32m+[m			[32m} else {[m
+[32m+[m				[32mconsole.log('Public votes API failed:', response.status, response.statusText);[m
+ 			}[m
+ 		} catch (error) {[m
+[31m-			console.log('API not available for public votes');[m
+[32m+[m			[32mconsole.log('API not available for public votes:', error);[m
+ 		}[m
+ 		return 0;[m
+ 	}[m
+[36m@@ -167,9 +178,9 @@[m
+ 	}[m
+ [m
+ 	function updatePublicStats(stats) {[m
+[31m-		totalVotesEl.textContent = stats.totalVotes.toLocaleString('he-IL');[m
+[32m+[m		[32manimateCountUp(totalVotesEl, stats.totalVotes);[m
+ 		if (totalUsersEl) {[m
+[31m-			totalUsersEl.textContent = stats.totalUsers.toLocaleString('he-IL');[m
+[32m+[m			[32manimateCountUp(totalUsersEl, stats.totalUsers);[m
+ 		}[m
+ 	}[m
+ [m
+[36m@@ -203,6 +214,15 @@[m
+ 				minute: '2-digit'[m
+ 			});[m
+ 			[m
+[32m+[m			[32m// Format impact display[m
+[32m+[m			[32mlet impactDisplay = '';[m
+[32m+[m			[32mif (vote.impact !== undefined && vote.impact !== 0) {[m
+[32m+[m				[32mconst impactText = vote.impact > 0 ? `+${formatCurrency(vote.impact)}` : formatCurrency(vote.impact);[m
+[32m+[m				[32mimpactDisplay = ` • ${impactText}`;[m
+[32m+[m			[32m} else if (vote.impact === 0) {[m
+[32m+[m				[32mimpactDisplay = ' • +0 ₪';[m
+[32m+[m			[32m}[m
+[32m+[m
+ 			voteItem.innerHTML = `[m
+ 				<div class="public-vote-left">[m
+ 					<div class="public-vote-scenario">${formatScenarioDisplay(vote.scenario)}</div>[m
+[36m@@ -210,7 +230,7 @@[m
+ 					<div class="public-vote-time">${timeAgo}</div>[m
+ 				</div>[m
+ 				<div class="public-vote-right">[m
+[31m-					<div class="public-vote-badge ${vote.voteType}">${voteText[vote.voteType]}</div>[m
+[32m+[m					[32m<div class="public-vote-badge ${vote.voteType}">${voteText[vote.voteType]}${impactDisplay}</div>[m
+ 				</div>[m
+ 			`;[m
+ 			[m
+[36m@@ -301,8 +321,39 @@[m
+ 		}[m
+ 	}[m
+ [m
+[32m+[m	[32m// Count-up animation function[m
+[32m+[m	[32mfunction animateCountUp(element, targetValue, duration = 800) {[m
+[32m+[m		[32m// Clear any existing animation for this element[m
+[32m+[m		[32mif (element._animationTimer) {[m
+[32m+[m			[32mclearInterval(element._animationTimer);[m
+[32m+[m		[32m}[m
+[32m+[m[41m		[m
+[32m+[m		[32mconst startValue = parseInt(element.textContent) || 0;[m
+[32m+[m		[32mif (startValue === targetValue) {[m
+[32m+[m			[32mreturn; // No animation needed if values are the same[m
+[32m+[m		[32m}[m
+[32m+[m[41m		[m
+[32m+[m		[32mconst increment = (targetValue - startValue) / (duration / 16); // 60fps[m
+[32m+[m		[32mlet currentValue = startValue;[m
+[32m+[m[41m		[m
+[32m+[m		[32melement._animationTimer = setInterval(() => {[m
+[32m+[m			[32mcurrentValue += increment;[m
+[32m+[m			[32mif ((increment > 0 && currentValue >= targetValue) || (increment < 0 && currentValue <= targetValue)) {[m
+[32m+[m				[32mcurrentValue = targetValue;[m
+[32m+[m				[32mclearInterval(element._animationTimer);[m
+[32m+[m				[32melement._animationTimer = null;[m
+[32m+[m			[32m}[m
+[32m+[m			[32melement.textContent = Math.floor(currentValue).toLocaleString('he-IL');[m
+[32m+[m		[32m}, 16);[m
+[32m+[m	[32m}[m
+[32m+[m
+ 	async function updateVotesUI() {[m
+ 		// Update the answer-specific vote counter (votesCount) - shows votes for current scenario only[m
+[32m+[m		[32mif (!votesCountEl) {[m
+[32m+[m			[32mconsole.error('votesCountEl element not found!');[m
+[32m+[m			[32mreturn;[m
+[32m+[m		[32m}[m
+[32m+[m[41m		[m
+ 		if (window.currentScenario) {[m
+ 			try {[m
+ 				const response = await fetch(`${API_BASE}/calculate`, {[m
+[36m@@ -317,7 +368,7 @@[m
+ 				if (response.ok) {[m
+ 					const data = await response.json();[m
+ 					if (data.crowdData && data.crowdData.totalVotes !== undefined) {[m
+[31m-						votesCountEl.textContent = data.crowdData.totalVotes.toString();[m
+[32m+[m						[32manimateCountUp(votesCountEl, data.crowdData.totalVotes);[m
+ 						return;[m
+ 					}[m
+ 				}[m
+[36m@@ -327,7 +378,7 @@[m
+ 		}[m
+ 		[m
+ 		// Fallback: show 0 if no current scenario or no API data[m
+[31m-		votesCountEl.textContent = '0';[m
+[32m+[m		[32manimateCountUp(votesCountEl, 0);[m
+ 	}[m
+ [m
+ 	async function updateMainVoteCounter() {[m
+[36m@@ -336,7 +387,7 @@[m
+ 			const response = await fetch(`${API_BASE}/public-stats`);[m
+ 			if (response.ok) {[m
+ 				const data = await response.json();[m
+[31m-				totalVotesEl.textContent = data.totalVotes.toLocaleString('he-IL');[m
+[32m+[m				[32manimateCountUp(totalVotesEl, data.totalVotes);[m
+ 				return;[m
+ 			}[m
+ 		} catch (error) {[m
+[36m@@ -344,15 +395,15 @@[m
+ 		}[m
+ 		[m
+ 		// Fallback: show 0 if no API data[m
+[31m-		totalVotesEl.textContent = '0';[m
+[32m+[m		[32manimateCountUp(totalVotesEl, 0);[m
+ 	}[m
+ [m
+ 	function baseSuggestion({ eventType, closeness, venue, location }) {[m
+ 		let base = 200; // minimal baseline[m
+ 		// Event type modifier[m
+ 		switch (eventType) {[m
+[31m-			case 'wedding': base += 150; break;[m
+[31m-			case 'bar-bat': base += 80; break;[m
+[32m+[m			[32mcase 'wedding': base += 120; break;[m
+[32m+[m			[32mcase 'bar-bat': base += 20; break;[m
+ 			case 'brit': base += 50; break;[m
+ 			default: base -= 40; break;[m
+ 		}[m
+[36m@@ -373,7 +424,7 @@[m
+ 		}[m
+ 		// Location[m
+ 		switch (location) {[m
+[31m-			case 'center': base += 50; break; // higher for center[m
+[32m+[m			[32mcase 'center': base += 40; break; // higher for center[m
+ 			case 'north': base += 20; break; // slightly higher for north[m
+ 			case 'south': base += 0; break; // no change for south[m
+ 

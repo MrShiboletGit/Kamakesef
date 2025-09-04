@@ -303,6 +303,39 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 	font-weight: 700;
 }
 
+
+/* Amount change highlight animation */
+.amount-change-highlight {
+	animation: amountChangePulse 2s ease-in-out;
+}
+
+@keyframes amountChangePulse {
+	0% { 
+		background: linear-gradient(135deg, #fef3c7, #fde68a);
+		transform: scale(1);
+	}
+	25% { 
+		background: linear-gradient(135deg, #fde68a, #f59e0b);
+		transform: scale(1.05);
+		box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+	}
+	50% { 
+		background: linear-gradient(135deg, #f59e0b, #d97706);
+		transform: scale(1.02);
+		box-shadow: 0 6px 25px rgba(245, 158, 11, 0.4);
+	}
+	75% { 
+		background: linear-gradient(135deg, #fde68a, #f59e0b);
+		transform: scale(1.01);
+		box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+	}
+	100% { 
+		background: transparent;
+		transform: scale(1);
+		box-shadow: none;
+	}
+}
+
 /* Public Votes */
 .public-votes-card {
 	max-width: 800px;

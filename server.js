@@ -11,7 +11,10 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cC
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://kamakesef.vercel.app'],
+    credentials: true
+}));
 app.use(express.json());
 
 // Serve static files
