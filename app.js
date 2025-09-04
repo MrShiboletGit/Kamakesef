@@ -618,7 +618,13 @@
 			const newAmount = await calculateAndRender(true); // Pass true to indicate this is a vote impact update
 			
 			// Show impact feedback if price changed
-			console.log('Price change check:', { oldAmount, newAmount, difference: newAmount - oldAmount });
+			console.log('Price change check:', { 
+				oldAmount, 
+				newAmount, 
+				difference: newAmount - oldAmount,
+				scenario: window.currentScenario,
+				voteType: type
+			});
 			if (newAmount !== oldAmount) {
 				const difference = newAmount - oldAmount;
 				const changeText = difference > 0 ? `+${formatCurrency(difference)}` : formatCurrency(difference);

@@ -215,6 +215,14 @@ app.post('/api/calculate', async (req, res) => {
         
         const factor = 1 + bias * maxAdjustment;
         const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
+        
+        console.log('Final adjustment result:', {
+            maxAdjustment,
+            factor,
+            baseAmount,
+            adjustedAmount,
+            change: adjustedAmount - baseAmount
+        });
 
         res.json({
             adjustedAmount,
