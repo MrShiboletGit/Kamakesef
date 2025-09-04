@@ -12,7 +12,32 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://kamakesef.vercel.app', 'https://kamakesef.com'],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Allow localhost and local IPs
+        if (origin.includes('localhost') || 
+            origin.includes('127.0.0.1') ||
+            origin.match(/^https?:\/\/192\.168\.\d+\.\d+/) ||
+            origin.match(/^https?:\/\/10\.\d+\.\d+\.\d+/) ||
+            origin.match(/^https?:\/\/172\.(1[6-9]|2\d|3[01])\.\d+\.\d+/)) {
+            return callback(null, true);
+        }
+        
+        // Allow production domains
+        const allowedOrigins = [
+            'https://kamakesef.vercel.app',
+            'https://kamakesef.com',
+            'https://www.kamakesef.com'
+        ];
+        
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        
+        callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
 app.use(express.json());
