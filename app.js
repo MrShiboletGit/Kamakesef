@@ -19,7 +19,7 @@
 	// Use local API when running on localhost, production API otherwise
 	const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
 		? 'http://localhost:3001/api' 
-		: 'https://kamakesef.vercel.app/api';
+		: 'https://kamakesef.com/api';
 	
 	console.log('API_BASE set to:', API_BASE);
 	console.log('Current hostname:', window.location.hostname);

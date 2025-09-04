@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://kamakesef.vercel.app'],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://kamakesef.vercel.app', 'https://kamakesef.com'],
     credentials: true
 }));
 app.use(express.json());
