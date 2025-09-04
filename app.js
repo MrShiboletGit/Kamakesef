@@ -16,7 +16,13 @@
 
 	const votesStorageKey = 'wedding-calc-votes-v1';
 	const votedScenariosKey = 'wedding-calc-voted-scenarios-v1';
-	const API_BASE = 'https://kamakesef.vercel.app/api';
+	// Use local API when running on localhost, production API otherwise
+	const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+		? 'http://localhost:3001/api' 
+		: 'https://kamakesef.vercel.app/api';
+	
+	console.log('API_BASE set to:', API_BASE);
+	console.log('Current hostname:', window.location.hostname);
 	
 	// Real-time updates
 	let lastVoteCount = 0;
