@@ -128,6 +128,18 @@ app.post('/api/vote', async (req, res) => {
                 scenario_key: scenarioKey
             }]);
         
+        console.log('Vote submitted successfully:', {
+            scenarioKey,
+            voteType,
+            amount,
+            updatedVote: {
+                too_low: updatedVote.too_low,
+                just_right: updatedVote.just_right,
+                too_high: updatedVote.too_high,
+                count: updatedVote.count
+            }
+        });
+
         res.json({ 
             success: true, 
             votes: {
@@ -176,6 +188,14 @@ app.post('/api/calculate', async (req, res) => {
         // Calculate crowd adjustment with scaling
         const total = scenarioVote.too_low + scenarioVote.just_right + scenarioVote.too_high;
         const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
+        
+        console.log('Crowd adjustment calculation:', {
+            scenarioKey,
+            votes: { too_low: scenarioVote.too_low, just_right: scenarioVote.just_right, too_high: scenarioVote.too_high },
+            total,
+            bias,
+            baseAmount
+        });
         
         // Scaling system: gradually increase max adjustment as votes increase
         // 1-3 votes: max ±15%

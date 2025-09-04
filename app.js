@@ -612,10 +612,10 @@
 			await updateMainVoteCounter(); // Update main total counter
 			
 			// Recalculate with new crowd adjustment to get updated price
-			await calculateAndRender(true); // Pass true to indicate this is a vote impact update
+			const newAmount = await calculateAndRender(true); // Pass true to indicate this is a vote impact update
 			
 			// Show impact feedback if price changed
-			const newAmount = window.currentAmount;
+			console.log('Price change check:', { oldAmount, newAmount, difference: newAmount - oldAmount });
 			if (newAmount !== oldAmount) {
 				const difference = newAmount - oldAmount;
 				const changeText = difference > 0 ? `+${formatCurrency(difference)}` : formatCurrency(difference);
