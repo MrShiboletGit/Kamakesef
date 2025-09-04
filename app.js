@@ -570,7 +570,26 @@
 				btn.style.borderColor = '';
 			}, 200);
 
-			// Submit vote to API
+			// Store the old amount to show the impact
+			const oldAmount = window.currentAmount;
+			
+			// Calculate the base amount (before crowd adjustment) for voting
+			const baseAmount = baseSuggestion(window.currentScenario);
+
+			// Mark scenario as voted
+			markScenarioAsVoted(window.currentScenario);
+
+			// Add to vote history (use base amount for consistency)
+			addToVoteHistory(window.currentScenario, baseAmount, type);
+
+			// Also store locally as backup
+			const v = getVotes();
+			if (v[type] !== undefined) {
+				v[type] += 1;
+				setVotes(v);
+			}
+
+			// Submit vote to API with base amount
 			try {
 				const response = await fetch(`${API_BASE}/vote`, {
 					method: 'POST',
@@ -579,7 +598,7 @@
 						scenario: window.currentScenario, // Core scenario for vote buckets
 						fullScenario: window.currentFullScenario, // Full scenario for display
 						voteType: type,
-						amount: window.currentAmount
+						amount: baseAmount // Use base amount instead of current amount
 					})
 				});
 
@@ -589,22 +608,6 @@
 			} catch (error) {
 				console.log('API not available, storing locally');
 				showVoteFeedback('ההצבעה נשמרה מקומית', 'info');
-			}
-
-			// Store the old amount to show the impact
-			const oldAmount = window.currentAmount;
-
-			// Mark scenario as voted
-			markScenarioAsVoted(window.currentScenario);
-
-			// Add to vote history
-			addToVoteHistory(window.currentScenario, window.currentAmount, type);
-
-			// Also store locally as backup
-			const v = getVotes();
-			if (v[type] !== undefined) {
-				v[type] += 1;
-				setVotes(v);
 			}
 
 			// Update vote counters immediately
