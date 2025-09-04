@@ -67,56 +67,90 @@ body {
 	text-align: center;
 }
 
-.theme-toggle {
-	background: #1e293b;
-	border: 2px solid #334155;
-	color: #fbbf24;
-	padding: 10px;
-	border-radius: 50%;
-	cursor: pointer;
-	transition: all 0.3s ease;
+.theme-switch-container {
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	width: 44px;
-	height: 44px;
+	gap: 12px;
+	background: var(--card-bg);
+	padding: 8px 16px;
+	border-radius: 25px;
+	border: 1px solid var(--card-border);
 	backdrop-filter: blur(6px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow);
 }
 
-.theme-toggle:hover {
-	background: #fbbf24;
-	color: #1e293b;
-	border-color: #fbbf24;
-	transform: scale(1.05);
-	box-shadow: 0 6px 16px rgba(251, 191, 36, 0.3);
+.theme-label {
+	font-size: 18px;
+	transition: opacity 0.3s ease;
 }
 
-.theme-toggle:active {
-	transform: scale(0.95);
+.theme-switch {
+	position: relative;
+	display: inline-block;
+	width: 50px;
+	height: 24px;
 }
 
-.theme-icon {
-	font-size: 20px;
-	transition: transform 0.3s ease;
+.theme-switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
 }
 
-.theme-toggle:hover .theme-icon {
-	transform: rotate(20deg);
+.slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: var(--input-bg);
+	border: 1px solid var(--input-border);
+	transition: 0.3s;
+	border-radius: 24px;
 }
 
-/* Dark mode theme toggle styling - sun with white background */
-[data-theme="dark"] .theme-toggle {
-	background: #f8fafc;
-	border: 2px solid #e2e8f0;
-	color: #f59e0b;
+.slider:before {
+	position: absolute;
+	content: "";
+	height: 18px;
+	width: 18px;
+	left: 2px;
+	bottom: 2px;
+	background: var(--accent-color);
+	transition: 0.3s;
+	border-radius: 50%;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-[data-theme="dark"] .theme-toggle:hover {
-	background: #f59e0b;
-	color: white;
-	border-color: #f59e0b;
-	box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+input:checked + .slider {
+	background: var(--accent-color);
+}
+
+input:checked + .slider:before {
+	transform: translateX(26px);
+	background: white;
+}
+
+.slider:hover {
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode specific styling */
+[data-theme="dark"] .theme-label:first-child {
+	opacity: 0.5;
+}
+
+[data-theme="dark"] .theme-label:last-child {
+	opacity: 1;
+}
+
+[data-theme="light"] .theme-label:first-child {
+	opacity: 1;
+}
+
+[data-theme="light"] .theme-label:last-child {
+	opacity: 0.5;
 }
 
 .logo-link {

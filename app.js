@@ -865,25 +865,23 @@
 	
 	// Theme switching functionality
 	const themeToggle = document.getElementById('themeToggle');
-	const themeIcon = themeToggle.querySelector('.theme-icon');
 	
 	// Load saved theme or default to light
 	const savedTheme = localStorage.getItem('theme') || 'light';
 	document.documentElement.setAttribute('data-theme', savedTheme);
-	updateThemeIcon(savedTheme);
+	updateThemeSwitch(savedTheme);
 	
 	// Theme toggle event listener
-	themeToggle.addEventListener('click', function() {
-		const currentTheme = document.documentElement.getAttribute('data-theme');
-		const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+	themeToggle.addEventListener('change', function() {
+		const newTheme = this.checked ? 'dark' : 'light';
 		
 		document.documentElement.setAttribute('data-theme', newTheme);
 		localStorage.setItem('theme', newTheme);
-		updateThemeIcon(newTheme);
+		updateThemeSwitch(newTheme);
 	});
 	
-	function updateThemeIcon(theme) {
-		themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+	function updateThemeSwitch(theme) {
+		themeToggle.checked = theme === 'dark';
 	}
 })();
 

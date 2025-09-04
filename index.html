@@ -17,9 +17,14 @@
 <body>
 	<header class="app-header">
 		<div class="theme-toggle-row">
-			<button class="theme-toggle" id="themeToggle" aria-label="החלף בין מצב בהיר לכהה">
-				<span class="theme-icon">☀️</span>
-			</button>
+			<div class="theme-switch-container">
+				<span class="theme-label">🌙</span>
+				<label class="theme-switch" for="themeToggle">
+					<input type="checkbox" id="themeToggle" aria-label="החלף בין מצב בהיר לכהה">
+					<span class="slider"></span>
+				</label>
+				<span class="theme-label">☀️</span>
+			</div>
 		</div>
 		<div class="logo-container">
 			<a href="/" class="logo-link">
