@@ -354,7 +354,7 @@
 			case 'wedding': base += 150; break;
 			case 'bar-bat': base += 80; break;
 			case 'brit': base += 50; break;
-			default: base += 40; break;
+			default: base -= 40; break;
 		}
 		// Closeness
 		switch (closeness) {
@@ -366,14 +366,14 @@
 		}
 		// Venue
 		switch (venue) {
-			case 'home': base -= 40; break; // חצר/בית/בית כנסת - home-based venues, lower cost
+			case 'home': base -= 10; break; // חצר/בית/בית כנסת - home-based venues, lower cost
 			case 'garden': base += 40; break; // גן אירועים - outdoor event venue, mid-range
 			case 'hall': base += 70; break; // אולם אירועים - formal venue, highest cost
 			case 'restaurant': base += 30; break; // מסעדה - dining venue
 		}
 		// Location
 		switch (location) {
-			case 'center': base += 100; break; // higher for center
+			case 'center': base += 50; break; // higher for center
 			case 'north': base += 20; break; // slightly higher for north
 			case 'south': base += 0; break; // no change for south
 			case 'jerusalem': base += 30; break; // higher for Jerusalem
@@ -382,16 +382,7 @@
 		return Math.max(0, Math.round(base / 10) * 10);
 	}
 
-	function applyPersonalAdjustments(amount, { incomeTier, partySize }) {
-		// Income tier adjustment
-		switch (incomeTier) {
-			case 'low': amount *= 0.9; break;
-			case 'mid': amount *= 1.0; break;
-			case 'high': amount *= 1.03; break;
-			case 'veryHigh': amount *= 1.06; break;
-			case 'premium': amount *= 1.10; break;
-		}
-		
+	function applyPersonalAdjustments(amount, { partySize }) {
 		// Party size adjustment - compounding 80% for each additional person
 		// First person: 100%, Second: 80%, Third: 64%, Fourth: 51.2%, etc.
 		if (partySize > 1) {
@@ -473,14 +464,13 @@
 		const eventType = document.getElementById('eventType').value;
 		const closeness = document.getElementById('closeness').value;
 		const partySize = Number(partySizeInput.value);
-		const incomeTier = document.getElementById('incomeTier').value;
 		const venue = document.getElementById('venue').value;
 		const location = document.getElementById('location').value;
 		
 		// Core scenario for crowd learning (without personal factors)
 		const coreScenario = { eventType, closeness, venue, location };
 		// Full scenario for personal adjustments and voting
-		const fullScenario = { eventType, closeness, partySize, incomeTier, venue, location };
+		const fullScenario = { eventType, closeness, partySize, venue, location };
 		
 		// Calculate base amount from core factors only
 		const base = baseSuggestion(coreScenario);
@@ -488,7 +478,7 @@
 		const crowdResult = await crowdAdjustment(base, coreScenario);
 		console.log('Crowd adjustment result:', crowdResult);
 		// Apply personal adjustments
-		const finalAmount = applyPersonalAdjustments(crowdResult.amount, { incomeTier, partySize });
+		const finalAmount = applyPersonalAdjustments(crowdResult.amount, { partySize });
 		console.log('Final amount after personal adjustments:', finalAmount);
 		
 		updateCheque(finalAmount, eventType, isVoteImpact);
