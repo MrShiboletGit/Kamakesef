@@ -467,6 +467,7 @@
 	}
 
 	async function calculateAndRender(isVoteImpact = false) {
+		console.log('calculateAndRender called with isVoteImpact:', isVoteImpact);
 		const eventType = document.getElementById('eventType').value;
 		const closeness = document.getElementById('closeness').value;
 		const partySize = Number(partySizeInput.value);
@@ -501,6 +502,7 @@
 		// Check if user has already voted on this scenario
 		updateVoteButtonsState();
 		
+		console.log('calculateAndRender completed, returning:', finalAmount);
 		return finalAmount;
 	}
 
