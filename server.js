@@ -188,11 +188,61 @@ app.post('/api/calculate', async (req, res) => {
             });
         }
 
-        // Calculate crowd adjustment with scaling
+        // Calculate crowd adjustment with special handling for "justRight" votes
         const total = scenarioVote.too_low + scenarioVote.just_right + scenarioVote.too_high;
+        
+        // If we have "justRight" votes, use them as the target price
+        if (scenarioVote.just_right > 0) {
+            // Calculate average amount from "justRight" votes
+            const justRightAverage = scenarioVote.total_amount / scenarioVote.count;
+            
+            // Calculate how much we need to adjust from base amount to reach the target
+            const targetAdjustment = (justRightAverage - baseAmount) / baseAmount;
+            
+            // Apply the adjustment, but limit it to reasonable bounds
+            const maxAdjustment = Math.min(0.5, Math.max(0.1, 0.05 + (scenarioVote.just_right / 10) * 0.2)); // 10-50% max
+            const limitedAdjustment = Math.max(-maxAdjustment, Math.min(maxAdjustment, targetAdjustment));
+            
+            const factor = 1 + limitedAdjustment;
+            const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
+            
+            console.log('Crowd adjustment calculation (justRight target):', {
+                scenarioKey,
+                votes: { too_low: scenarioVote.too_low, just_right: scenarioVote.just_right, too_high: scenarioVote.too_high },
+                justRightAverage,
+                baseAmount,
+                targetAdjustment,
+                limitedAdjustment,
+                factor,
+                adjustedAmount
+            });
+            
+            res.json({
+                adjustedAmount,
+                crowdData: {
+                    totalVotes: total,
+                    votes: {
+                        tooLow: scenarioVote.too_low,
+                        justRight: scenarioVote.just_right,
+                        tooHigh: scenarioVote.too_high,
+                        totalAmount: scenarioVote.total_amount,
+                        count: scenarioVote.count
+                    },
+                    bias: limitedAdjustment,
+                    factor,
+                    maxAdjustment: Math.round(maxAdjustment * 100), // Show as percentage
+                    averageAmount: Math.round(scenarioVote.total_amount / scenarioVote.count),
+                    targetPrice: justRightAverage,
+                    adjustmentType: 'justRight_target'
+                }
+            });
+            return;
+        }
+        
+        // Fallback to traditional bias calculation if no "justRight" votes
         const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
         
-        console.log('Crowd adjustment calculation:', {
+        console.log('Crowd adjustment calculation (traditional bias):', {
             scenarioKey,
             votes: { too_low: scenarioVote.too_low, just_right: scenarioVote.just_right, too_high: scenarioVote.too_high },
             total,
@@ -219,7 +269,7 @@ app.post('/api/calculate', async (req, res) => {
         const factor = 1 + bias * maxAdjustment;
         const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
         
-        console.log('Final adjustment result:', {
+        console.log('Final adjustment result (traditional bias):', {
             maxAdjustment,
             factor,
             baseAmount,
@@ -241,7 +291,8 @@ app.post('/api/calculate', async (req, res) => {
                 bias,
                 factor,
                 maxAdjustment: Math.round(maxAdjustment * 100), // Show as percentage
-                averageAmount: Math.round(scenarioVote.total_amount / scenarioVote.count)
+                averageAmount: Math.round(scenarioVote.total_amount / scenarioVote.count),
+                adjustmentType: 'traditional_bias'
             }
         });
     } catch (error) {
