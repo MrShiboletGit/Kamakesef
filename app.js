@@ -166,21 +166,29 @@
 
 	async function fetchPublicStats() {
 		try {
+			console.log('Fetching public stats from:', `${API_BASE}/public-stats`);
 			const response = await fetch(`${API_BASE}/public-stats`);
+			console.log('Public stats response status:', response.status, response.statusText);
 			if (response.ok) {
 				const data = await response.json();
+				console.log('Public stats data received:', data);
 				updatePublicStats(data);
+			} else {
+				console.error('Public stats API failed:', response.status, response.statusText);
 			}
 		} catch (error) {
-			console.log('API not available for public stats');
+			console.error('API not available for public stats:', error);
 		}
 	}
 
 	function updatePublicStats(stats) {
-		animateCountUp(totalVotesEl, stats.totalVotes);
-		if (totalUsersEl) {
-			animateCountUp(totalUsersEl, stats.totalUsers);
+		console.log('Updating public stats:', stats);
+		if (totalVotesEl) {
+			animateCountUp(totalVotesEl, stats.totalVotes);
+		} else {
+			console.error('totalVotesEl element not found!');
 		}
+		// Note: totalUsersEl doesn't exist in the HTML, so we skip it
 	}
 
 	function updatePublicVotesDisplay(votes) {
@@ -355,6 +363,7 @@
 		
 		if (window.currentScenario) {
 			try {
+				console.log('Fetching vote count for scenario:', window.currentScenario);
 				const response = await fetch(`${API_BASE}/calculate`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -364,36 +373,52 @@
 					})
 				});
 				
+				console.log('Vote count response status:', response.status, response.statusText);
 				if (response.ok) {
 					const data = await response.json();
+					console.log('Vote count data received:', data);
 					if (data.crowdData && data.crowdData.totalVotes !== undefined) {
+						console.log('Updating vote count to:', data.crowdData.totalVotes);
 						animateCountUp(votesCountEl, data.crowdData.totalVotes);
 						return;
+					} else {
+						console.log('No crowd data or totalVotes in response');
 					}
+				} else {
+					console.error('Vote count API failed:', response.status, response.statusText);
 				}
 			} catch (error) {
-				console.log('API not available for vote count');
+				console.error('API not available for vote count:', error);
 			}
+		} else {
+			console.log('No current scenario set');
 		}
 		
 		// Fallback: show 0 if no current scenario or no API data
+		console.log('Using fallback: setting vote count to 0');
 		animateCountUp(votesCountEl, 0);
 	}
 
 	async function updateMainVoteCounter() {
 		// Update the main vote counter (totalVotes) - shows total votes across all scenarios
 		try {
+			console.log('Fetching main vote counter from:', `${API_BASE}/public-stats`);
 			const response = await fetch(`${API_BASE}/public-stats`);
+			console.log('Main vote counter response status:', response.status, response.statusText);
 			if (response.ok) {
 				const data = await response.json();
+				console.log('Main vote counter data received:', data);
 				animateCountUp(totalVotesEl, data.totalVotes);
 				return;
+			} else {
+				console.error('Main vote counter API failed:', response.status, response.statusText);
 			}
 		} catch (error) {
-			console.log('API not available for main vote counter');
+			console.error('API not available for main vote counter:', error);
 		}
 		
 		// Fallback: show 0 if no API data
+		console.log('Using fallback: setting main vote counter to 0');
 		animateCountUp(totalVotesEl, 0);
 	}
 
@@ -838,12 +863,29 @@
 		});
 	});
 
-	// Initialize UI
-	updateVotesUI();
-	updateMainVoteCounter();
+	// Initialize UI when DOM is ready
+	function initializeApp() {
+		console.log('Initializing UI...');
+		console.log('totalVotesEl found:', !!totalVotesEl);
+		console.log('votesCountEl found:', !!votesCountEl);
+		
+		updateVotesUI();
+		updateMainVoteCounter();
+		
+		// Initialize public stats
+		console.log('Initializing public stats...');
+		fetchPublicStats();
+		
+		// Test API connection
+		testAPIConnection();
+	}
 	
-	// Initialize public stats
-	fetchPublicStats();
+	// Run initialization when DOM is ready
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initializeApp);
+	} else {
+		initializeApp();
+	}
 	
 	// Test API connection
 	async function testAPIConnection() {
@@ -861,7 +903,44 @@
 		}
 	}
 	
-	testAPIConnection();
+	// Debug function for testing API calls
+	window.debugAPI = async function() {
+		console.log('=== API Debug Test ===');
+		console.log('API Base URL:', API_BASE);
+		
+		try {
+			console.log('1. Testing public-stats endpoint...');
+			const statsResponse = await fetch(`${API_BASE}/public-stats`);
+			console.log('Stats response status:', statsResponse.status);
+			const statsData = await statsResponse.json();
+			console.log('Stats data:', statsData);
+			
+			console.log('2. Testing votes endpoint...');
+			const votesResponse = await fetch(`${API_BASE}/votes`);
+			console.log('Votes response status:', votesResponse.status);
+			const votesData = await votesResponse.json();
+			console.log('Votes data (first 3 keys):', Object.keys(votesData).slice(0, 3));
+			console.log('Total vote scenarios:', Object.keys(votesData).length);
+			
+			console.log('3. Testing calculate endpoint with sample scenario...');
+			const sampleScenario = { eventType: 'wedding', closeness: 'distant', venue: 'restaurant', location: 'center' };
+			const calculateResponse = await fetch(`${API_BASE}/calculate`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ 
+					scenario: sampleScenario, 
+					baseAmount: 300 
+				})
+			});
+			console.log('Calculate response status:', calculateResponse.status);
+			const calculateData = await calculateResponse.json();
+			console.log('Calculate data:', calculateData);
+			
+			console.log('=== Debug Test Complete ===');
+		} catch (error) {
+			console.error('Debug test failed:', error);
+		}
+	};
 	
 	// Theme switching functionality
 	const themeToggle = document.getElementById('themeToggle');
