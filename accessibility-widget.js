@@ -7,11 +7,7 @@ class AccessibilityWidget {
     this.settings = {
       highContrast: false,
       largeText: false,
-      screenReader: false,
-      reducedMotion: false,
       grayscale: false,
-      focusIndicator: true,
-      keyboardNavigation: true,
       colorBlind: false,
     };
     
@@ -80,54 +76,6 @@ class AccessibilityWidget {
             <span class="option-status">כבוי</span>
           </button>
 
-          <!-- Focus Indicator -->
-          <button class="accessibility-option" data-setting="focusIndicator">
-            <span class="option-content">
-              <svg class="option-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
-                <path d="M13 13l6 6"/>
-              </svg>
-              מחוון מיקוד
-            </span>
-            <span class="option-status">פועל</span>
-          </button>
-
-          <!-- Keyboard Navigation -->
-          <button class="accessibility-option" data-setting="keyboardNavigation">
-            <span class="option-content">
-              <svg class="option-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-              </svg>
-              ניווט מקלדת
-            </span>
-            <span class="option-status">פועל</span>
-          </button>
-
-          <!-- Screen Reader -->
-          <button class="accessibility-option" data-setting="screenReader">
-            <span class="option-content">
-              <svg class="option-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-              </svg>
-              הודעות קורא מסך
-            </span>
-            <span class="option-status">כבוי</span>
-          </button>
-
-          <!-- Reduced Motion -->
-          <button class="accessibility-option" data-setting="reducedMotion">
-            <span class="option-content">
-              <svg class="option-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/>
-              </svg>
-              הפחתת תנועה
-            </span>
-            <span class="option-status">כבוי</span>
-          </button>
 
           <!-- Color Blind Support -->
           <button class="accessibility-option" data-setting="colorBlind">
@@ -240,11 +188,7 @@ class AccessibilityWidget {
     const settingNames = {
       highContrast: 'ניגודיות גבוהה',
       largeText: 'טקסט גדול',
-      screenReader: 'הודעות קורא מסך',
-      reducedMotion: 'הפחתת תנועה',
       grayscale: 'גווני אפור',
-      focusIndicator: 'מחוון מיקוד',
-      keyboardNavigation: 'ניווט מקלדת',
       colorBlind: 'תמיכה בעיוורון צבעים'
     };
     
@@ -291,31 +235,13 @@ class AccessibilityWidget {
     } else {
       root.style.fontSize = '';
     }
-    
-    // Reduced motion
-    if (this.settings.reducedMotion) {
-      root.style.setProperty('--reduced-motion', 'reduce');
-    } else {
-      root.style.removeProperty('--reduced-motion');
-    }
-    
-    // Focus indicator
-    if (this.settings.focusIndicator) {
-      root.style.setProperty('--focus-visible', '2px solid #0066cc');
-    } else {
-      root.style.removeProperty('--focus-visible');
-    }
   }
 
   resetSettings() {
     this.settings = {
       highContrast: false,
       largeText: false,
-      screenReader: false,
-      reducedMotion: false,
       grayscale: false,
-      focusIndicator: true,
-      keyboardNavigation: true,
       colorBlind: false,
     };
     
@@ -337,20 +263,8 @@ class AccessibilityWidget {
   }
 
   announceToScreenReader(message) {
-    if (!this.settings.screenReader) return;
-    
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    document.body.appendChild(announcement);
-    
-    setTimeout(() => {
-      if (announcement.parentNode) {
-        document.body.removeChild(announcement);
-      }
-    }, 1000);
+    // Screen reader announcements removed as this feature was non-functional
+    return;
   }
 }
 

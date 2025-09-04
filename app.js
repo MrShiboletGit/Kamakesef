@@ -862,6 +862,29 @@
 	}
 	
 	testAPIConnection();
+	
+	// Theme switching functionality
+	const themeToggle = document.getElementById('themeToggle');
+	const themeIcon = themeToggle.querySelector('.theme-icon');
+	
+	// Load saved theme or default to light
+	const savedTheme = localStorage.getItem('theme') || 'light';
+	document.documentElement.setAttribute('data-theme', savedTheme);
+	updateThemeIcon(savedTheme);
+	
+	// Theme toggle event listener
+	themeToggle.addEventListener('click', function() {
+		const currentTheme = document.documentElement.getAttribute('data-theme');
+		const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+		
+		document.documentElement.setAttribute('data-theme', newTheme);
+		localStorage.setItem('theme', newTheme);
+		updateThemeIcon(newTheme);
+	});
+	
+	function updateThemeIcon(theme) {
+		themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+	}
 })();
 
 
