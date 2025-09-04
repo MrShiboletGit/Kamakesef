@@ -1,7 +1,6 @@
 (function () {
 	const form = document.getElementById('calcForm');
 	const partySizeInput = document.getElementById('partySize');
-	const partySizeVal = document.getElementById('partySizeVal');
 
 	const amountEl = document.getElementById('amount');
 	const amountWordsEl = document.getElementById('amountWords');
@@ -552,8 +551,26 @@
 	}
 
 	// Input mirrors
+	// Party size +/- button handlers
+	document.getElementById('partySizeMinus').addEventListener('click', function() {
+		const currentValue = parseInt(partySizeInput.value);
+		if (currentValue > 1) {
+			partySizeInput.value = currentValue - 1;
+		}
+	});
+
+	document.getElementById('partySizePlus').addEventListener('click', function() {
+		const currentValue = parseInt(partySizeInput.value);
+		if (currentValue < 10) {
+			partySizeInput.value = currentValue + 1;
+		}
+	});
+
+	// Handle direct input changes
 	partySizeInput.addEventListener('input', function () {
-		partySizeVal.textContent = partySizeInput.value;
+		const value = parseInt(this.value);
+		if (value < 1) this.value = 1;
+		if (value > 10) this.value = 10;
 	});
 
 	// Debounce mechanism to prevent multiple rapid calls
@@ -821,8 +838,7 @@
 		});
 	});
 
-	// Initialize UI mirrors
-	partySizeVal.textContent = partySizeInput.value;
+	// Initialize UI
 	updateVotesUI();
 	updateMainVoteCounter();
 	

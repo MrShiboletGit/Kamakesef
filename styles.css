@@ -169,6 +169,72 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 	font-size: 12px;
 }
 
+/* Number input with +/- buttons */
+.number-input-container {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	border: 1px solid #cbd5e1;
+	border-radius: 12px;
+	background: #fff;
+	overflow: hidden;
+}
+
+.number-btn {
+	background: #f8fafc;
+	border: none;
+	color: #0f172a;
+	font-size: 18px;
+	font-weight: 700;
+	width: 40px;
+	height: 48px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+.number-btn:hover {
+	background: #e2e8f0;
+	color: #0ea5e9;
+}
+
+.number-btn:active {
+	background: #cbd5e1;
+	transform: scale(0.95);
+}
+
+.minus-btn {
+	border-right: 1px solid #e2e8f0;
+}
+
+.plus-btn {
+	border-left: 1px solid #e2e8f0;
+}
+
+.number-input {
+	border: none;
+	background: transparent;
+	text-align: center;
+	font-size: 16px;
+	font-weight: 600;
+	color: #0f172a;
+	width: 60px;
+	padding: 12px 8px;
+	outline: none;
+}
+
+.number-input::-webkit-outer-spin-button,
+.number-input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.number-input[type=number] {
+	-moz-appearance: textfield;
+}
+
 .primary {
 	margin-top: 8px;
 	background: linear-gradient(135deg, #2563eb, #22d3ee);

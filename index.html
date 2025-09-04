@@ -45,6 +45,14 @@
 			<section class="card form-card" aria-labelledby="formTitle">
 			<h2 id="formTitle">פרטי האירוע</h2>
 			<form id="calcForm" class="form-grid">
+				<!-- כמה מגיעים -->
+				<label for="partySize">כמה אתם מגיעים?</label>
+				<div class="number-input-container">
+					<button type="button" class="number-btn minus-btn" id="partySizeMinus">−</button>
+					<input type="number" id="partySize" min="1" max="10" value="1" class="number-input" />
+					<button type="button" class="number-btn plus-btn" id="partySizePlus">+</button>
+				</div>
+
 				<!-- סוג האירוע -->
 				<label for="eventType">סוג האירוע</label>
 				<select id="eventType" required>
@@ -64,20 +72,13 @@
 					<option value="distant">מכרים</option>
 				</select>
 
-				<!-- כמה מגיעים -->
-				<label for="partySize">כמה אתם מגיעים?</label>
-				<div class="inline-input">
-					<input type="range" id="partySize" min="1" max="6" step="1" value="1" />
-					<span id="partySizeVal" class="pill">1</span>
-				</div>
-
 
 				<!-- איפה חוגגים -->
 				<label for="venue">איפה חוגגים?</label>
 				<select id="venue" required>
 					<option value="home">חצר/בית/בית כנסת</option>
 					<option value="garden">גן אירועים</option>
-					<option value="hall">אולם אירועים</option>
+					<option value="hall" selected>אולם אירועים</option>
 					<option value="restaurant">מסעדה</option>
 				</select>
 
