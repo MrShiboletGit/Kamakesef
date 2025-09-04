@@ -447,6 +447,7 @@
 	}
 
 	function updateCheque(amount, eventType, isVoteImpact = false) {
+		console.log('updateCheque called with:', { amount, eventType, isVoteImpact });
 		amountEl.textContent = formatCurrency(amount);
 		amountWordsEl.textContent = shekelsToWords(amount);
 		chequeDateEl.textContent = new Date().toLocaleDateString('he-IL');
@@ -461,6 +462,7 @@
 		// Add appropriate animation class
 		if (isVoteImpact) {
 			cheque.classList.add('vote-impact');
+			console.log('Added vote-impact animation');
 		} else {
 			cheque.classList.add('pop');
 		}
@@ -484,8 +486,10 @@
 		const base = baseSuggestion(coreScenario);
 		// Get crowd-adjusted amount
 		const crowdResult = await crowdAdjustment(base, coreScenario);
+		console.log('Crowd adjustment result:', crowdResult);
 		// Apply personal adjustments
 		const finalAmount = applyPersonalAdjustments(crowdResult.amount, { incomeTier, partySize });
+		console.log('Final amount after personal adjustments:', finalAmount);
 		
 		updateCheque(finalAmount, eventType, isVoteImpact);
 		voteBox.hidden = false;
