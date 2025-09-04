@@ -376,12 +376,8 @@
 			}
 		}
 		
-		// Fallback: show message if no current scenario
-		if (!window.currentScenario) {
-			votesCountEl.textContent = 'בחרו פרטים לראות הצבעות';
-		} else {
-			animateCountUp(votesCountEl, 0);
-		}
+		// Fallback: show 0 if no current scenario or no API data
+		animateCountUp(votesCountEl, 0);
 	}
 
 	async function updateMainVoteCounter() {
@@ -843,8 +839,7 @@
 	});
 
 	// Initialize UI
-	// Only initialize main vote counter on page load
-	// updateVotesUI() will be called when a scenario is calculated
+	updateVotesUI();
 	updateMainVoteCounter();
 	
 	// Initialize public stats
