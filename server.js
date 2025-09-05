@@ -316,10 +316,40 @@ app.post('/api/calculate', async (req, res) => {
             // Fall back to old system for backward compatibility
             console.log('Using old system - sample arrays not available yet');
             const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
-            const maxAdjustment = Math.min(0.5, Math.max(0.1, 0.05 + (scenarioVote.just_right / 10) * 0.2));
+            
+            // Much more aggressive adjustments for old system too
+            let maxAdjustment;
+            if (total <= 3) {
+                maxAdjustment = 0.8; // 80% max adjustment for very few votes
+            } else if (total <= 7) {
+                maxAdjustment = 0.6; // 60% max adjustment for small samples
+            } else if (total <= 15) {
+                maxAdjustment = 0.4; // 40% max adjustment for medium samples
+            } else {
+                maxAdjustment = 0.3; // 30% max adjustment for large samples
+            }
+            
+            // Bonus for clear consensus
+            const tooHighRatio = scenarioVote.too_high / total;
+            const tooLowRatio = scenarioVote.too_low / total;
+            if (tooHighRatio >= 0.6 || tooLowRatio >= 0.6) {
+                maxAdjustment = Math.min(0.9, maxAdjustment * 1.5); // Even more aggressive for consensus
+            }
+            
             const limitedAdjustment = Math.max(-maxAdjustment, Math.min(maxAdjustment, bias));
             const factor = 1 + limitedAdjustment;
             const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
+            
+            console.log('Old system aggressive adjustment:', {
+                total,
+                bias: bias.toFixed(3),
+                maxAdjustment: maxAdjustment.toFixed(2),
+                limitedAdjustment: limitedAdjustment.toFixed(3),
+                factor: factor.toFixed(3),
+                baseAmount,
+                adjustedAmount,
+                adjustment: adjustedAmount - baseAmount
+            });
             
             res.json({
                 adjustedAmount,
