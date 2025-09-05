@@ -429,7 +429,7 @@
 	}
 
 	function baseSuggestion({ eventType, closeness, venue, location }) {
-		let base = 150; // reduced minimal baseline
+		let base = 120; // reduced minimal baseline
 		// Event type modifier - more realistic amounts
 		switch (eventType) {
 			case 'wedding': base += 120; break; // reduced from 120
@@ -440,8 +440,8 @@
 		// Closeness - more realistic progression
 		switch (closeness) {
 			case 'distant': base += 0; break;
-			case 'distantFamily': base += 40; break; // reduced from 40
-			case 'friend': base += 80; break; // reduced from 80
+			case 'distantFamily': base += 0; break; // reduced from 40
+			case 'friend': base += 50; break; // reduced from 80
 			case 'close': base += 150; break; // reduced from 160
 			case 'inner': base += 250; break; // reduced from 250
 		}
