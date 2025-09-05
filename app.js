@@ -572,13 +572,17 @@
 		const finalAmount = applyPersonalAdjustments(crowdResult.amount, { partySize });
 		console.log('Final amount after personal adjustments:', finalAmount);
 		
-		updateCheque(finalAmount, eventType, isVoteImpact);
+		// Ensure minimum amount of 150 NIS
+		const minAmount = Math.max(150, finalAmount);
+		console.log('Final amount with minimum constraint:', minAmount);
+		
+		updateCheque(minAmount, eventType, isVoteImpact);
 		voteBox.hidden = false;
 		
 		// Store current scenario for voting (use core scenario for vote buckets, but full scenario for display)
 		window.currentScenario = coreScenario;
 		window.currentFullScenario = fullScenario;
-		window.currentAmount = finalAmount;
+		window.currentAmount = minAmount;
 		
 		// Update both vote counters
 		await updateVotesUI(); // Answer-specific counter
@@ -587,8 +591,8 @@
 		// Check if user has already voted on this scenario
 		updateVoteButtonsState();
 		
-		console.log('calculateAndRender completed, returning:', finalAmount);
-		return finalAmount;
+		console.log('calculateAndRender completed, returning:', minAmount);
+		return minAmount;
 	}
 
 	// Input mirrors
