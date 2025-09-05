@@ -433,8 +433,8 @@
 		// Event type modifier - more realistic amounts
 		switch (eventType) {
 			case 'wedding': base += 120; break; // reduced from 120
-			case 'bar-bat': base += 20; break; // reduced from 20
-			case 'brit': base += 50; break; // reduced from 50
+			case 'bar-bat': base += 40; break; // reduced from 20
+			case 'brit': base += 10; break; // reduced from 50
 			default: base -= 40; break; // reduced from 40
 		}
 		// Closeness - more realistic progression
@@ -442,15 +442,15 @@
 			case 'distant': base += 0; break;
 			case 'distantFamily': base += 40; break; // reduced from 40
 			case 'friend': base += 80; break; // reduced from 80
-			case 'close': base += 140; break; // reduced from 160
+			case 'close': base += 150; break; // reduced from 160
 			case 'inner': base += 250; break; // reduced from 250
 		}
 		// Venue - more realistic differences
 		switch (venue) {
-			case 'home': base -= 20; break; // more discount for home venues
+			case 'home': base -= 30; break; // more discount for home venues
 			case 'garden': base += 30; break; // reduced from 40
 			case 'hall': base += 70; break; // reduced from 70
-			case 'restaurant': base += 30; break; // reduced from 30
+			case 'restaurant': base += 40; break; // reduced from 30
 		}
 		// Location - more realistic differences
 		switch (location) {
@@ -728,7 +728,6 @@
 			}
 
 			// Calculate per-person amount for voting (before party size adjustments)
-			const baseAmount = baseSuggestion(window.currentScenario);
 			const crowdResult = await crowdAdjustment(baseAmount, window.currentScenario);
 			const perPersonAmount = crowdResult.amount; // This is the per-person amount
 			
