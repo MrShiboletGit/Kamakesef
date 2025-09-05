@@ -87,16 +87,47 @@ function recommendAmountPerPerson(s, basePerPerson) {
     // Shrinkage to base (stability; tune τ)
     const n_eff = lows.length + highs.length + jrs.length;
     
-    // More responsive weighting for low vote counts
-    let τ = 5; // base prior strength
-    if (n_eff <= 3) {
-        τ = 2; // Very responsive for first few votes
-    } else if (n_eff <= 7) {
-        τ = 3; // Moderately responsive for small samples
+    // Much more aggressive weighting, especially for clear consensus
+    let τ = 3; // base prior strength (reduced from 5)
+    if (n_eff <= 2) {
+        τ = 1; // Extremely responsive for first votes
+    } else if (n_eff <= 5) {
+        τ = 1.5; // Very responsive for small samples
+    } else if (n_eff <= 10) {
+        τ = 2; // Still very responsive for medium samples
+    }
+    
+    // Bonus responsiveness for clear consensus
+    const totalVotes = n_eff;
+    const tooHighRatio = highs.length / totalVotes;
+    const tooLowRatio = lows.length / totalVotes;
+    const justRightRatio = jrs.length / totalVotes;
+    
+    // If there's a clear consensus (60%+ in one direction), be even more aggressive
+    if (tooHighRatio >= 0.6) {
+        τ = Math.max(0.5, τ * 0.3); // Much more aggressive for "too high" consensus
+    } else if (tooLowRatio >= 0.6) {
+        τ = Math.max(0.5, τ * 0.3); // Much more aggressive for "too low" consensus
+    } else if (justRightRatio >= 0.6) {
+        τ = Math.max(0.5, τ * 0.5); // Moderately aggressive for "just right" consensus
     }
     
     const w = n_eff / (n_eff + τ);
     const perPerson = w * learned + (1 - w) * basePerPerson;
+    
+    // Debug logging for aggressive adjustments
+    console.log('Aggressive adjustment calculation:', {
+        n_eff,
+        τ,
+        w: w.toFixed(3),
+        learned,
+        basePerPerson,
+        perPerson: Math.round(perPerson),
+        tooHighRatio: (highs.length / totalVotes).toFixed(2),
+        tooLowRatio: (lows.length / totalVotes).toFixed(2),
+        justRightRatio: (jrs.length / totalVotes).toFixed(2),
+        adjustment: Math.round(perPerson - basePerPerson)
+    });
 
     return Math.max(0, Math.round(perPerson / 10) * 10); // round only when displaying
 }
