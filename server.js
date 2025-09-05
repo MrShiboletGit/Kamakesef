@@ -129,7 +129,8 @@ function recommendAmountPerPerson(s, basePerPerson) {
         adjustment: Math.round(perPerson - basePerPerson)
     });
 
-    return Math.max(0, Math.round(perPerson / 10) * 10); // round only when displaying
+    const roundedAmount = Math.max(0, Math.round(perPerson / 10) * 10);
+    return Math.max(150, roundedAmount); // Ensure minimum of 150 NIS
 }
 
 // API Routes
@@ -298,8 +299,9 @@ app.post('/api/calculate', async (req, res) => {
         }
 
         if (!scenarioVote || scenarioVote.count === 0) {
+            const minAdjustedAmount = Math.max(150, baseAmount);
             return res.json({ 
-                adjustedAmount: baseAmount, 
+                adjustedAmount: minAdjustedAmount, 
                 crowdData: null,
                 message: 'No crowd data available yet'
             });
@@ -338,7 +340,7 @@ app.post('/api/calculate', async (req, res) => {
             
             const limitedAdjustment = Math.max(-maxAdjustment, Math.min(maxAdjustment, bias));
             const factor = 1 + limitedAdjustment;
-            const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
+            const adjustedAmount = Math.max(150, Math.round(baseAmount * factor / 10) * 10); // Ensure minimum of 150 NIS
             
             console.log('Old system aggressive adjustment:', {
                 total,
