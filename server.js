@@ -50,6 +50,49 @@ function generateScenarioKey(scenario) {
     return `${scenario.eventType}-${scenario.closeness}-${scenario.venue}-${scenario.location}`;
 }
 
+// Helper function to calculate median
+const median = arr => {
+    if (!arr.length) return undefined;
+    const s = [...arr].sort((a,b)=>a-b);
+    const m = Math.floor(s.length/2);
+    return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2;
+};
+
+// Robust recommendation system
+function recommendAmountPerPerson(s, basePerPerson) {
+    // Extract per-type amounts (store these raw per vote!)
+    const lows   = s.too_low_samples || [];   // amounts marked "too low"
+    const highs  = s.too_high_samples || [];  // amounts marked "too high"
+    const jrs    = s.just_right_samples || []; // amounts marked "just right"
+
+    // Robust summaries
+    const L = lows.length  ? Math.max(...lows)   : undefined; // max too-low = lower bound
+    const U = highs.length ? Math.min(...highs)  : undefined; // min too-high = upper bound
+    const JRmed = median(jrs); // or trimmed mean
+
+    // Pick a learned target
+    let learned;
+    if (L !== undefined && U !== undefined && L < U) {
+        learned = 0.5 * (L + U);             // bisection between bounds
+    } else if (jrs.length >= 7 && JRmed !== undefined) {
+        learned = JRmed;                      // robust JR when sufficient
+    } else if (L !== undefined) {
+        learned = L * 1.05;                   // gentle step up
+    } else if (U !== undefined) {
+        learned = U * 0.95;                   // gentle step down
+    } else {
+        learned = basePerPerson;              // cold start
+    }
+
+    // Shrinkage to base (stability; tune τ)
+    const n_eff = lows.length + highs.length + jrs.length;
+    const τ = 20; // prior strength
+    const w = n_eff / (n_eff + τ);
+    const perPerson = w * learned + (1 - w) * basePerPerson;
+
+    return Math.max(0, Math.round(perPerson / 10) * 10); // round only when displaying
+}
+
 // API Routes
 
 // Get all votes
@@ -110,11 +153,11 @@ app.post('/api/vote', async (req, res) => {
                 [voteType === 'tooLow' ? 'too_low' : voteType === 'justRight' ? 'just_right' : 'too_high']: existingVote[voteType === 'tooLow' ? 'too_low' : voteType === 'justRight' ? 'just_right' : 'too_high'] + 1,
                 total_amount: existingVote.total_amount + amount,
                 count: existingVote.count + 1,
-                // Store amount by vote type for better calculation (if columns exist)
-                ...(existingVote.just_right_amount !== undefined && {
-                    just_right_amount: voteType === 'justRight' ? (existingVote.just_right_amount || 0) + amount : (existingVote.just_right_amount || 0),
-                    too_low_amount: voteType === 'tooLow' ? (existingVote.too_low_amount || 0) + amount : (existingVote.too_low_amount || 0),
-                    too_high_amount: voteType === 'tooHigh' ? (existingVote.too_high_amount || 0) + amount : (existingVote.too_high_amount || 0),
+                // Store individual vote samples for robust statistics
+                ...(existingVote.just_right_samples !== undefined && {
+                    too_low_samples: voteType === 'tooLow' ? [...(existingVote.too_low_samples || []), amount] : (existingVote.too_low_samples || []),
+                    just_right_samples: voteType === 'justRight' ? [...(existingVote.just_right_samples || []), amount] : (existingVote.just_right_samples || []),
+                    too_high_samples: voteType === 'tooHigh' ? [...(existingVote.too_high_samples || []), amount] : (existingVote.too_high_samples || []),
                 }),
                 updated_at: new Date().toISOString()
             };
@@ -137,12 +180,10 @@ app.post('/api/vote', async (req, res) => {
                 too_high: voteType === 'tooHigh' ? 1 : 0,
                 total_amount: amount,
                 count: 1,
-                // Store amount by vote type for better calculation (if columns exist)
-                ...(true && { // Always include for new records
-                    just_right_amount: voteType === 'justRight' ? amount : 0,
-                    too_low_amount: voteType === 'tooLow' ? amount : 0,
-                    too_high_amount: voteType === 'tooHigh' ? amount : 0,
-                }),
+                // Store individual vote samples for robust statistics
+                too_low_samples: voteType === 'tooLow' ? [amount] : [],
+                just_right_samples: voteType === 'justRight' ? [amount] : [],
+                too_high_samples: voteType === 'tooHigh' ? [amount] : [],
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
@@ -228,24 +269,18 @@ app.post('/api/calculate', async (req, res) => {
         // Calculate crowd adjustment with special handling for "justRight" votes
         const total = scenarioVote.too_low + scenarioVote.just_right + scenarioVote.too_high;
         
-        // If we have "justRight" votes, use the average of justRight vote amounts as target
-        if (scenarioVote.just_right > 0) {
-            // Calculate average amount from justRight votes only
-            // Handle backward compatibility if new columns don't exist yet
-            const justRightAmount = scenarioVote.just_right_amount || 0;
-            const justRightAverage = justRightAmount > 0 ? justRightAmount / scenarioVote.just_right : baseAmount;
-            
-            // Use the justRight average as the target amount
-            const adjustedAmount = Math.max(0, Math.round(justRightAverage / 10) * 10);
-            
-            console.log('Crowd adjustment calculation (justRight target):', {
-                scenarioKey,
-                votes: { too_low: scenarioVote.too_low, just_right: scenarioVote.just_right, too_high: scenarioVote.too_high },
-                justRightAverage,
-                baseAmount,
-                adjustedAmount,
-                message: 'Using justRight vote amounts as target'
-            });
+        // Use the new robust recommendation system
+        // baseAmount is already the per-person amount from the frontend
+        
+        // Check if we have the new sample arrays, otherwise fall back to old system
+        if (scenarioVote.too_low_samples === undefined || scenarioVote.just_right_samples === undefined || scenarioVote.too_high_samples === undefined) {
+            // Fall back to old system for backward compatibility
+            console.log('Using old system - sample arrays not available yet');
+            const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
+            const maxAdjustment = Math.min(0.5, Math.max(0.1, 0.05 + (scenarioVote.just_right / 10) * 0.2));
+            const limitedAdjustment = Math.max(-maxAdjustment, Math.min(maxAdjustment, bias));
+            const factor = 1 + limitedAdjustment;
+            const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
             
             res.json({
                 adjustedAmount,
@@ -258,55 +293,41 @@ app.post('/api/calculate', async (req, res) => {
                         totalAmount: scenarioVote.total_amount,
                         count: scenarioVote.count
                     },
-                    bias: 0,
-                    factor: 1,
-                    maxAdjustment: 0,
-                    averageAmount: Math.round(scenarioVote.total_amount / scenarioVote.count),
-                    targetPrice: justRightAverage,
-                    adjustmentType: 'justRight_target'
+                    adjustmentType: 'legacy_fallback'
                 }
             });
             return;
         }
         
-        // Fallback to traditional bias calculation if no "justRight" votes
-        const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
+        const adjustedAmount = recommendAmountPerPerson(scenarioVote, baseAmount);
         
-        console.log('Crowd adjustment calculation (traditional bias):', {
+        console.log('Crowd adjustment calculation (robust system):', {
             scenarioKey,
             votes: { too_low: scenarioVote.too_low, just_right: scenarioVote.just_right, too_high: scenarioVote.too_high },
-            total,
-            bias,
-            baseAmount
-        });
-        
-        // Scaling system: gradually increase max adjustment as votes increase
-        // 1-3 votes: max ±15%
-        // 4-8 votes: max ±25% 
-        // 9-20 votes: max ±40%
-        // 21+ votes: max ±60%
-        let maxAdjustment;
-        if (total <= 3) {
-            maxAdjustment = 0.15; // 15%
-        } else if (total <= 8) {
-            maxAdjustment = 0.25; // 25%
-        } else if (total <= 20) {
-            maxAdjustment = 0.40; // 40%
-        } else {
-            maxAdjustment = 0.60; // 60%
-        }
-        
-        const factor = 1 + bias * maxAdjustment;
-        const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
-        
-        console.log('Final adjustment result (traditional bias):', {
-            maxAdjustment,
-            factor,
+            samples: {
+                too_low: scenarioVote.too_low_samples || [],
+                just_right: scenarioVote.just_right_samples || [],
+                too_high: scenarioVote.too_high_samples || []
+            },
             baseAmount,
             adjustedAmount,
-            change: adjustedAmount - baseAmount
+            message: 'Using robust statistical approach'
         });
-
+        
+        // Debug the robust calculation
+        const lows = scenarioVote.too_low_samples || [];
+        const highs = scenarioVote.too_high_samples || [];
+        const jrs = scenarioVote.just_right_samples || [];
+        console.log('Debug robust calculation:', {
+            lows,
+            highs, 
+            jrs,
+            baseAmount,
+            L: lows.length ? Math.max(...lows) : undefined,
+            U: highs.length ? Math.min(...highs) : undefined,
+            JRmed: median(jrs)
+        });
+        
         res.json({
             adjustedAmount,
             crowdData: {
@@ -318,13 +339,15 @@ app.post('/api/calculate', async (req, res) => {
                     totalAmount: scenarioVote.total_amount,
                     count: scenarioVote.count
                 },
-                bias,
-                factor,
-                maxAdjustment: Math.round(maxAdjustment * 100), // Show as percentage
-                averageAmount: Math.round(scenarioVote.total_amount / scenarioVote.count),
-                adjustmentType: 'traditional_bias'
+                samples: {
+                    tooLow: scenarioVote.too_low_samples || [],
+                    justRight: scenarioVote.just_right_samples || [],
+                    tooHigh: scenarioVote.too_high_samples || []
+                },
+                adjustmentType: 'robust_statistical'
             }
         });
+        return;
     } catch (error) {
         console.error('Error calculating crowd adjustment:', error);
         res.status(500).json({ error: 'Failed to calculate crowd adjustment' });
