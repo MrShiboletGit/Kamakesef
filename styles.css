@@ -229,6 +229,46 @@ input:checked + .slider:before {
 	padding: 12px 20px 40px;
 }
 
+/* SEO Intro Section */
+.seo-intro {
+	background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+	color: white;
+	padding: 30px;
+	border-radius: 15px;
+	margin-bottom: 30px;
+	text-align: center;
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.seo-intro h2 {
+	font-size: 1.8rem;
+	font-weight: 700;
+	margin-bottom: 15px;
+	line-height: 1.3;
+}
+
+.seo-intro p {
+	font-size: 1.1rem;
+	line-height: 1.6;
+	margin: 0;
+	opacity: 0.95;
+}
+
+@media (max-width: 768px) {
+	.seo-intro {
+		padding: 20px;
+		margin-bottom: 20px;
+	}
+	
+	.seo-intro h2 {
+		font-size: 1.5rem;
+	}
+	
+	.seo-intro p {
+		font-size: 1rem;
+	}
+}
+
 /* Navigation */
 .nav-buttons {
 	display: flex;
