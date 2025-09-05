@@ -432,14 +432,14 @@
 		let base = 120; // reduced minimal baseline
 		// Event type modifier - more realistic amounts
 		switch (eventType) {
-			case 'wedding': base += 120; break; // reduced from 120
+			case 'wedding': base += 140; break; // reduced from 120
 			case 'bar-bat': base += 20; break; // reduced from 20
 			case 'brit': base -= 10; break; // reduced from 50
 			default: base -= 40; break; // reduced from 40
 		}
 		// Closeness - more realistic progression
 		switch (closeness) {
-			case 'distant': base += 0; break;
+			case 'distant': base -= 20; break;
 			case 'distantFamily': base += 0; break; // reduced from 40
 			case 'friend': base += 50; break; // reduced from 80
 			case 'close': base += 150; break; // reduced from 160
