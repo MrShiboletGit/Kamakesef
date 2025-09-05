@@ -719,6 +719,47 @@ select, input[type="range"], input[type="text"], input[type="number"] {
 }
 
 .app-footer { text-align: center; color: #64748b; padding: 20px; }
+
+.footer-seo-content {
+	background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+	padding: 30px;
+	border-radius: 15px;
+	margin-bottom: 20px;
+	text-align: right;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.footer-seo-content h3 {
+	color: var(--primary-color);
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin-bottom: 15px;
+}
+
+.footer-seo-content p {
+	font-size: 1rem;
+	line-height: 1.6;
+	margin-bottom: 15px;
+	color: var(--text-primary);
+}
+
+.footer-seo-content ul {
+	text-align: right;
+	margin: 15px 0;
+	padding-right: 20px;
+}
+
+.footer-seo-content li {
+	font-size: 1rem;
+	line-height: 1.6;
+	margin-bottom: 8px;
+	color: var(--text-primary);
+}
+
+.footer-info {
+	margin-top: 20px;
+}
+
 .footer-links {
 	margin: 12px 0;
 }
