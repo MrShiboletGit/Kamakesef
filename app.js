@@ -439,10 +439,10 @@
 		}
 		// Closeness - more realistic progression
 		switch (closeness) {
-			case 'distant': base -= 20; break;
-			case 'distantFamily': base += 0; break; // reduced from 40
-			case 'friend': base += 50; break; // reduced from 80
-			case 'close': base += 150; break; // reduced from 160
+			case 'distant': base -= 30; break;
+			case 'distantFamily': base += 20; break; // reduced from 40
+			case 'friend': base += 150; break; // reduced from 80
+			case 'close': base += 110; break; // reduced from 160
 			case 'inner': base += 250; break; // reduced from 250
 		}
 		// Venue - more realistic differences
