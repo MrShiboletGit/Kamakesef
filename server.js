@@ -110,6 +110,12 @@ app.post('/api/vote', async (req, res) => {
                 [voteType === 'tooLow' ? 'too_low' : voteType === 'justRight' ? 'just_right' : 'too_high']: existingVote[voteType === 'tooLow' ? 'too_low' : voteType === 'justRight' ? 'just_right' : 'too_high'] + 1,
                 total_amount: existingVote.total_amount + amount,
                 count: existingVote.count + 1,
+                // Store amount by vote type for better calculation (if columns exist)
+                ...(existingVote.just_right_amount !== undefined && {
+                    just_right_amount: voteType === 'justRight' ? (existingVote.just_right_amount || 0) + amount : (existingVote.just_right_amount || 0),
+                    too_low_amount: voteType === 'tooLow' ? (existingVote.too_low_amount || 0) + amount : (existingVote.too_low_amount || 0),
+                    too_high_amount: voteType === 'tooHigh' ? (existingVote.too_high_amount || 0) + amount : (existingVote.too_high_amount || 0),
+                }),
                 updated_at: new Date().toISOString()
             };
             
@@ -131,6 +137,12 @@ app.post('/api/vote', async (req, res) => {
                 too_high: voteType === 'tooHigh' ? 1 : 0,
                 total_amount: amount,
                 count: 1,
+                // Store amount by vote type for better calculation (if columns exist)
+                ...(true && { // Always include for new records
+                    just_right_amount: voteType === 'justRight' ? amount : 0,
+                    too_low_amount: voteType === 'tooLow' ? amount : 0,
+                    too_high_amount: voteType === 'tooHigh' ? amount : 0,
+                }),
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
@@ -216,30 +228,23 @@ app.post('/api/calculate', async (req, res) => {
         // Calculate crowd adjustment with special handling for "justRight" votes
         const total = scenarioVote.too_low + scenarioVote.just_right + scenarioVote.too_high;
         
-        // If we have "justRight" votes, use them as the target price
+        // If we have "justRight" votes, use the average of justRight vote amounts as target
         if (scenarioVote.just_right > 0) {
-            // Calculate average amount from "justRight" votes
-            const justRightAverage = scenarioVote.total_amount / scenarioVote.count;
+            // Calculate average amount from justRight votes only
+            // Handle backward compatibility if new columns don't exist yet
+            const justRightAmount = scenarioVote.just_right_amount || 0;
+            const justRightAverage = justRightAmount > 0 ? justRightAmount / scenarioVote.just_right : baseAmount;
             
-            // Calculate how much we need to adjust from base amount to reach the target
-            const targetAdjustment = (justRightAverage - baseAmount) / baseAmount;
-            
-            // Apply the adjustment, but limit it to reasonable bounds
-            const maxAdjustment = Math.min(0.5, Math.max(0.1, 0.05 + (scenarioVote.just_right / 10) * 0.2)); // 10-50% max
-            const limitedAdjustment = Math.max(-maxAdjustment, Math.min(maxAdjustment, targetAdjustment));
-            
-            const factor = 1 + limitedAdjustment;
-            const adjustedAmount = Math.max(0, Math.round(baseAmount * factor / 10) * 10);
+            // Use the justRight average as the target amount
+            const adjustedAmount = Math.max(0, Math.round(justRightAverage / 10) * 10);
             
             console.log('Crowd adjustment calculation (justRight target):', {
                 scenarioKey,
                 votes: { too_low: scenarioVote.too_low, just_right: scenarioVote.just_right, too_high: scenarioVote.too_high },
                 justRightAverage,
                 baseAmount,
-                targetAdjustment,
-                limitedAdjustment,
-                factor,
-                adjustedAmount
+                adjustedAmount,
+                message: 'Using justRight vote amounts as target'
             });
             
             res.json({
@@ -253,9 +258,9 @@ app.post('/api/calculate', async (req, res) => {
                         totalAmount: scenarioVote.total_amount,
                         count: scenarioVote.count
                     },
-                    bias: limitedAdjustment,
-                    factor,
-                    maxAdjustment: Math.round(maxAdjustment * 100), // Show as percentage
+                    bias: 0,
+                    factor: 1,
+                    maxAdjustment: 0,
                     averageAmount: Math.round(scenarioVote.total_amount / scenarioVote.count),
                     targetPrice: justRightAverage,
                     adjustmentType: 'justRight_target'
