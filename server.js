@@ -86,7 +86,15 @@ function recommendAmountPerPerson(s, basePerPerson) {
 
     // Shrinkage to base (stability; tune τ)
     const n_eff = lows.length + highs.length + jrs.length;
-    const τ = 20; // prior strength
+    
+    // More responsive weighting for low vote counts
+    let τ = 5; // base prior strength
+    if (n_eff <= 3) {
+        τ = 2; // Very responsive for first few votes
+    } else if (n_eff <= 7) {
+        τ = 3; // Moderately responsive for small samples
+    }
+    
     const w = n_eff / (n_eff + τ);
     const perPerson = w * learned + (1 - w) * basePerPerson;
 
@@ -312,20 +320,6 @@ app.post('/api/calculate', async (req, res) => {
             baseAmount,
             adjustedAmount,
             message: 'Using robust statistical approach'
-        });
-        
-        // Debug the robust calculation
-        const lows = scenarioVote.too_low_samples || [];
-        const highs = scenarioVote.too_high_samples || [];
-        const jrs = scenarioVote.just_right_samples || [];
-        console.log('Debug robust calculation:', {
-            lows,
-            highs, 
-            jrs,
-            baseAmount,
-            L: lows.length ? Math.max(...lows) : undefined,
-            U: highs.length ? Math.min(...highs) : undefined,
-            JRmed: median(jrs)
         });
         
         res.json({
