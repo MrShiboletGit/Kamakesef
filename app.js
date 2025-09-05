@@ -433,7 +433,7 @@
 		// Event type modifier - more realistic amounts
 		switch (eventType) {
 			case 'wedding': base += 200; break; // reduced from 120
-			case 'bar-bat': base += 20; break; // reduced from 20
+			case 'bar-bat': base += 50; break; // reduced from 20
 			case 'brit': base -= 10; break; // reduced from 50
 			default: base -= 40; break; // reduced from 40
 		}
