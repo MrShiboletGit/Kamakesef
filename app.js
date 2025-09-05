@@ -429,35 +429,35 @@
 	}
 
 	function baseSuggestion({ eventType, closeness, venue, location }) {
-		let base = 200; // minimal baseline
-		// Event type modifier
+		let base = 150; // reduced minimal baseline
+		// Event type modifier - more realistic amounts
 		switch (eventType) {
-			case 'wedding': base += 120; break;
-			case 'bar-bat': base += 20; break;
-			case 'brit': base += 50; break;
-			default: base -= 40; break;
+			case 'wedding': base += 120; break; // reduced from 120
+			case 'bar-bat': base += 20; break; // reduced from 20
+			case 'brit': base += 50; break; // reduced from 50
+			default: base -= 40; break; // reduced from 40
 		}
-		// Closeness
+		// Closeness - more realistic progression
 		switch (closeness) {
 			case 'distant': base += 0; break;
-			case 'distantFamily': base += 40; break;
-			case 'friend': base += 80; break;
-			case 'close': base += 160; break;
-			case 'inner': base += 250; break;
+			case 'distantFamily': base += 40; break; // reduced from 40
+			case 'friend': base += 80; break; // reduced from 80
+			case 'close': base += 140; break; // reduced from 160
+			case 'inner': base += 250; break; // reduced from 250
 		}
-		// Venue
+		// Venue - more realistic differences
 		switch (venue) {
-			case 'home': base -= 10; break; // חצר/בית/בית כנסת - home-based venues, lower cost
-			case 'garden': base += 40; break; // גן אירועים - outdoor event venue, mid-range
-			case 'hall': base += 70; break; // אולם אירועים - formal venue, highest cost
-			case 'restaurant': base += 30; break; // מסעדה - dining venue
+			case 'home': base -= 20; break; // more discount for home venues
+			case 'garden': base += 30; break; // reduced from 40
+			case 'hall': base += 70; break; // reduced from 70
+			case 'restaurant': base += 30; break; // reduced from 30
 		}
-		// Location
+		// Location - more realistic differences
 		switch (location) {
-			case 'center': base += 40; break; // higher for center
-			case 'north': base += 20; break; // slightly higher for north
+			case 'center': base += 40; break; // reduced from 40
+			case 'north': base += 30; break; // reduced from 20
 			case 'south': base += 0; break; // no change for south
-			case 'jerusalem': base += 30; break; // higher for Jerusalem
+			case 'jerusalem': base += 15; break; // reduced from 30
 		}
 		// Round to nearest 10
 		return Math.max(0, Math.round(base / 10) * 10);
@@ -465,12 +465,22 @@
 
 	function applyPersonalAdjustments(amount, { partySize }) {
 		// Party size adjustment - compounding 80% for each additional person
-		// First person: 100%, Second: 80%, Third: 64%, Fourth: 51.2%, etc.
+		// First person: 100%, Second: 80%, Third: 64%, Fourth+: 64% (capped at 3rd person)
 		if (partySize > 1) {
 			let totalMultiplier = 1; // First person at 100%
-			for (let i = 1; i < partySize; i++) {
+			
+			// Calculate diminishing returns up to 3rd person
+			for (let i = 1; i < Math.min(partySize, 3); i++) {
 				totalMultiplier += Math.pow(0.80, i);
 			}
+			
+			// For 4th person and beyond, use the same rate as 3rd person (64%)
+			if (partySize > 3) {
+				const thirdPersonRate = Math.pow(0.80, 2); // 64%
+				const additionalPeople = partySize - 3;
+				totalMultiplier += thirdPersonRate * additionalPeople;
+			}
+			
 			amount = amount * totalMultiplier;
 		}
 		
@@ -717,6 +727,11 @@
 				setVotes(v);
 			}
 
+			// Calculate per-person amount for voting (before party size adjustments)
+			const baseAmount = baseSuggestion(window.currentScenario);
+			const crowdResult = await crowdAdjustment(baseAmount, window.currentScenario);
+			const perPersonAmount = crowdResult.amount; // This is the per-person amount
+			
 			// Submit vote to API
 			try {
 				const response = await fetch(`${API_BASE}/vote`, {
@@ -726,7 +741,7 @@
 						scenario: window.currentScenario,
 						fullScenario: window.currentFullScenario,
 						voteType: type,
-						amount: window.currentAmount
+						amount: perPersonAmount // Store per-person amount, not total
 					})
 				});
 
