@@ -227,6 +227,11 @@
 				minute: '2-digit'
 			});
 			
+			// Calculate the displayed amount (base amount * party size multiplier)
+			// The vote.amount is the per-person amount stored by the backend
+			const partySize = vote.scenario.partySize || 1;
+			const displayedAmount = applyPersonalAdjustments(vote.amount, { partySize });
+			
 			// Format impact display
 			let impactDisplay = '';
 			if (vote.impact !== undefined && vote.impact !== 0) {
@@ -239,7 +244,7 @@
 			voteItem.innerHTML = `
 				<div class="public-vote-left">
 					<div class="public-vote-scenario">${formatScenarioDisplay(vote.scenario)}</div>
-					<div class="public-vote-amount">${formatCurrency(vote.amount)}</div>
+					<div class="public-vote-amount">${formatCurrency(displayedAmount)}</div>
 					<div class="public-vote-time">${timeAgo}</div>
 				</div>
 				<div class="public-vote-right">
@@ -265,9 +270,13 @@
 			'tooHigh': '📈 גבוה מדי'
 		};
 		
+		// Calculate the displayed amount (base amount * party size multiplier)
+		const partySize = vote.scenario.partySize || 1;
+		const displayedAmount = applyPersonalAdjustments(vote.amount, { partySize });
+		
 		notification.innerHTML = `
 			<span class="vote-icon">${voteText[vote.voteType]}</span>
-			<span>הצבעה חדשה: ${formatCurrency(vote.amount)} - ${voteText[vote.voteType]}</span>
+			<span>הצבעה חדשה: ${formatCurrency(displayedAmount)} - ${voteText[vote.voteType]}</span>
 		`;
 		
 		voteNotifications.appendChild(notification);
