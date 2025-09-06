@@ -463,8 +463,8 @@
 		switch (eventType) {
 			case 'wedding': base += 180; break; // reduced from 200 (was too high)
 			case 'bar-bat': base += 20; break; // reduced from 40 (was way too high)
-			case 'brit': base -= 50; break; // reduced from -10 (was too high)
-			default: base -= 80; break; // reduced from -40 (was too high)
+			case 'brit': base -= 20; break; // reduced from -10 (was too high)
+			default: base -= 50; break; // reduced from -40 (was too high)
 		}
 		// Closeness - more realistic progression
 		switch (closeness) {
