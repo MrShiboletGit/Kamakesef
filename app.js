@@ -469,7 +469,7 @@
 		// Closeness - more realistic progression
 		switch (closeness) {
 			case 'distant': base -= 10; break;
-			case 'distantFamily': base += 20; break; // reduced from 40
+			case 'distantFamily': base += 40; break; // reduced from 40
 			case 'friend': base += 150; break; // reduced from 80
 			case 'close': base += 110; break; // reduced from 160
 			case 'inner': base += 250; break; // reduced from 250
