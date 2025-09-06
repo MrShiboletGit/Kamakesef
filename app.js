@@ -244,10 +244,12 @@
 				impactDisplay = ' • +0 ₪';
 			}
 
-			// Calculate range for public vote display (add 5 for better rounding)
+			// Calculate range for public vote display (add 5 for better rounding, dynamic range)
 			const adjustedAmount = displayedAmount + 5;
-			const minAmount = Math.max(150, adjustedAmount - 25);
-			const maxAmount = adjustedAmount + 25;
+			const rangePerPerson = 25;
+			const totalRange = rangePerPerson * (vote.scenario.partySize || 1);
+			const minAmount = Math.max(150, adjustedAmount - totalRange);
+			const maxAmount = adjustedAmount + totalRange;
 			const minFormatted = formatCurrency(minAmount).replace('₪', '').trim();
 			const maxFormatted = formatCurrency(maxAmount).replace('₪', '').trim();
 			
@@ -285,10 +287,12 @@
 		// Always apply party size multiplication to get the correct display amount
 		const displayedAmount = applyPersonalAdjustments(vote.amount, { partySize });
 		
-		// Calculate range for notification (add 5 for better rounding)
+		// Calculate range for notification (add 5 for better rounding, dynamic range)
 		const adjustedAmount = displayedAmount + 5;
-		const minAmount = Math.max(150, adjustedAmount - 25);
-		const maxAmount = adjustedAmount + 25;
+		const rangePerPerson = 25;
+		const totalRange = rangePerPerson * (vote.scenario.partySize || 1);
+		const minAmount = Math.max(150, adjustedAmount - totalRange);
+		const maxAmount = adjustedAmount + totalRange;
 		
 		const minFormatted = formatCurrency(minAmount).replace('₪', '').trim();
 		const maxFormatted = formatCurrency(maxAmount).replace('₪', '').trim();
@@ -560,10 +564,12 @@
 	function updateCheque(amount, eventType, isVoteImpact = false) {
 		console.log('updateCheque called with:', { amount, eventType, isVoteImpact });
 		
-		// Calculate range: add 5 for better rounding, then ±25 NIS around the amount
+		// Calculate dynamic range: add 5 for better rounding, then ±25 NIS per person
 		const adjustedAmount = amount + 5;
-		const minAmount = Math.max(150, adjustedAmount - 25); // Ensure minimum 150 NIS
-		const maxAmount = adjustedAmount + 25;
+		const rangePerPerson = 25;
+		const totalRange = rangePerPerson * (window.currentFullScenario?.partySize || 1);
+		const minAmount = Math.max(150, adjustedAmount - totalRange); // Ensure minimum 150 NIS
+		const maxAmount = adjustedAmount + totalRange;
 		
 		// Display range instead of single amount (avoid duplicate ₪ symbols)
 		const minFormatted = formatCurrency(minAmount).replace('₪', '').trim();
@@ -833,10 +839,12 @@
 				const changeText = impact > 0 ? `+${formatCurrency(impact)}` : formatCurrency(impact);
 				const oldAdjusted = oldAmount + 5;
 				const newAdjusted = newAmount + 5;
-				const oldMin = Math.max(150, oldAdjusted - 25);
-				const oldMax = oldAdjusted + 25;
-				const newMin = Math.max(150, newAdjusted - 25);
-				const newMax = newAdjusted + 25;
+				const rangePerPerson = 25;
+				const totalRange = rangePerPerson * (window.currentFullScenario?.partySize || 1);
+				const oldMin = Math.max(150, oldAdjusted - totalRange);
+				const oldMax = oldAdjusted + totalRange;
+				const newMin = Math.max(150, newAdjusted - totalRange);
+				const newMax = newAdjusted + totalRange;
 				const oldMinFormatted = formatCurrency(oldMin).replace('₪', '').trim();
 				const oldMaxFormatted = formatCurrency(oldMax).replace('₪', '').trim();
 				const newMinFormatted = formatCurrency(newMin).replace('₪', '').trim();

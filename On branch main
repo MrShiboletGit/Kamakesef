@@ -1,0 +1,17 @@
+warning: LF will be replaced by CRLF in app.js.
+The file will have its original line endings in your working directory
+[1mdiff --git a/app.js b/app.js[m
+[1mindex 5f05752..f72a25d 100644[m
+[1m--- a/app.js[m
+[1m+++ b/app.js[m
+[36m@@ -463,8 +463,8 @@[m
+ 		switch (eventType) {[m
+ 			case 'wedding': base += 180; break; // reduced from 200 (was too high)[m
+ 			case 'bar-bat': base += 20; break; // reduced from 40 (was way too high)[m
+[31m-			case 'brit': base -= 50; break; // reduced from -10 (was too high)[m
+[31m-			default: base -= 80; break; // reduced from -40 (was too high)[m
+[32m+[m			[32mcase 'brit': base -= 20; break; // reduced from -10 (was too high)[m
+[32m+[m			[32mdefault: base -= 50; break; // reduced from -40 (was too high)[m
+ 		}[m
+ 		// Closeness - more realistic progression[m
+ 		switch (closeness) {[m
