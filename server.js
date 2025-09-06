@@ -351,8 +351,6 @@ app.post('/api/calculate', async (req, res) => {
             }
             
             // Bonus for clear consensus
-            const tooHighRatio = scenarioVote.too_high / total;
-            const tooLowRatio = scenarioVote.too_low / total;
             if (tooHighRatio >= 0.6 || tooLowRatio >= 0.6) {
                 maxAdjustment = Math.min(0.9, maxAdjustment * 1.5); // Even more aggressive for consensus
             }
