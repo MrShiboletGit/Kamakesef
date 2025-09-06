@@ -323,14 +323,18 @@ app.post('/api/calculate', async (req, res) => {
             const tooLowRatio = scenarioVote.too_low / total;
             const tooHighRatio = scenarioVote.too_high / total;
             
-            // If majority is "just right", keep the price stable (bias = 0)
-            if (justRightRatio >= 0.5) {
+            // If significant portion is "just right", heavily reduce or eliminate bias
+            if (justRightRatio >= 0.4) {
+                // If 40%+ think it's right, keep price very stable
                 var bias = 0;
-            } else {
-                // Otherwise, use the traditional bias but reduce it based on just right votes
+            } else if (justRightRatio >= 0.2) {
+                // If 20-40% think it's right, heavily reduce bias
                 var bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
-                // Reduce bias strength based on how many "just right" votes there are
-                bias = bias * (1 - justRightRatio * 0.5); // Reduce bias by up to 50% if many just right votes
+                bias = bias * (1 - justRightRatio * 0.8); // Reduce bias by up to 80%
+            } else {
+                // If <20% think it's right, use normal bias with slight reduction
+                var bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
+                bias = bias * (1 - justRightRatio * 0.3); // Reduce bias by up to 30%
             }
             
             // Much more aggressive adjustments for old system too
