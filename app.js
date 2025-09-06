@@ -462,9 +462,9 @@
 		// These values are optimized based on real user voting patterns
 		switch (eventType) {
 			case 'wedding': base += 180; break; // reduced from 200 (was too high)
-			case 'bar-bat': base += 20; break; // reduced from 40 (was way too high)
-			case 'brit': base -= 20; break; // reduced from -10 (was too high)
-			default: base -= 50; break; // reduced from -40 (was too high)
+			case 'bar-bat': base += 30; break; // reduced from 40 (was way too high)
+			case 'brit': base -= 10; break; // reduced from -10 (was too high)
+			default: base -= 30; break; // reduced from -40 (was too high)
 		}
 		// Closeness - more realistic progression
 		switch (closeness) {
@@ -476,7 +476,7 @@
 		}
 		// Venue - more realistic differences
 		switch (venue) {
-			case 'home': base -= 30; break; // more discount for home venues
+			case 'home': base -= 20; break; // more discount for home venues
 			case 'garden': base += 30; break; // reduced from 40
 			case 'hall': base += 70; break; // reduced from 70
 			case 'restaurant': base += 40; break; // reduced from 30
