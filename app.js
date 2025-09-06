@@ -561,13 +561,13 @@
 		}
 	}
 
-	function updateCheque(amount, eventType, isVoteImpact = false) {
-		console.log('updateCheque called with:', { amount, eventType, isVoteImpact });
+	function updateCheque(amount, eventType, isVoteImpact = false, partySize = 1) {
+		console.log('updateCheque called with:', { amount, eventType, isVoteImpact, partySize });
 		
 		// Calculate dynamic range: add 5 for better rounding, then ±25 NIS per person
 		const adjustedAmount = amount + 5;
 		const rangePerPerson = 25;
-		const totalRange = rangePerPerson * (window.currentFullScenario?.partySize || 1);
+		const totalRange = rangePerPerson * partySize;
 		const minAmount = Math.max(150, adjustedAmount - totalRange); // Ensure minimum 150 NIS
 		const maxAmount = adjustedAmount + totalRange;
 		
@@ -621,7 +621,7 @@
 		const minAmount = Math.max(150, finalAmount);
 		console.log('Final amount with minimum constraint:', minAmount);
 		
-		updateCheque(minAmount, eventType, isVoteImpact);
+		updateCheque(minAmount, eventType, isVoteImpact, partySize);
 		voteBox.hidden = false;
 		
 		// Store current scenario for voting (use core scenario for vote buckets, but full scenario for display)
@@ -840,7 +840,7 @@
 				const oldAdjusted = oldAmount + 5;
 				const newAdjusted = newAmount + 5;
 				const rangePerPerson = 25;
-				const totalRange = rangePerPerson * (window.currentFullScenario?.partySize || 1);
+				const totalRange = rangePerPerson * (window.currentFullScenario?.partySize || window.currentScenario?.partySize || 1);
 				const oldMin = Math.max(150, oldAdjusted - totalRange);
 				const oldMax = oldAdjusted + totalRange;
 				const newMin = Math.max(150, newAdjusted - totalRange);
