@@ -317,7 +317,21 @@ app.post('/api/calculate', async (req, res) => {
         if (scenarioVote.too_low_samples === undefined || scenarioVote.just_right_samples === undefined || scenarioVote.too_high_samples === undefined) {
             // Fall back to old system for backward compatibility
             console.log('Using old system - sample arrays not available yet');
-            const bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
+            // Improved bias calculation that accounts for "just right" votes
+            // Just right votes should stabilize the price, not be ignored
+            const justRightRatio = scenarioVote.just_right / total;
+            const tooLowRatio = scenarioVote.too_low / total;
+            const tooHighRatio = scenarioVote.too_high / total;
+            
+            // If majority is "just right", keep the price stable (bias = 0)
+            if (justRightRatio >= 0.5) {
+                var bias = 0;
+            } else {
+                // Otherwise, use the traditional bias but reduce it based on just right votes
+                var bias = (scenarioVote.too_low - scenarioVote.too_high) / total;
+                // Reduce bias strength based on how many "just right" votes there are
+                bias = bias * (1 - justRightRatio * 0.5); // Reduce bias by up to 50% if many just right votes
+            }
             
             // Much more aggressive adjustments for old system too
             let maxAdjustment;
@@ -344,6 +358,9 @@ app.post('/api/calculate', async (req, res) => {
             
             console.log('Old system aggressive adjustment:', {
                 total,
+                justRightRatio: justRightRatio.toFixed(3),
+                tooLowRatio: tooLowRatio.toFixed(3),
+                tooHighRatio: tooHighRatio.toFixed(3),
                 bias: bias.toFixed(3),
                 maxAdjustment: maxAdjustment.toFixed(2),
                 limitedAdjustment: limitedAdjustment.toFixed(3),
