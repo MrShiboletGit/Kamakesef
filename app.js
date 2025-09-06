@@ -244,10 +244,17 @@
 				impactDisplay = ' • +0 ₪';
 			}
 
+			// Calculate range for public vote display (add 5 for better rounding)
+			const adjustedAmount = displayedAmount + 5;
+			const minAmount = Math.max(150, adjustedAmount - 25);
+			const maxAmount = adjustedAmount + 25;
+			const minFormatted = formatCurrency(minAmount).replace('₪', '').trim();
+			const maxFormatted = formatCurrency(maxAmount).replace('₪', '').trim();
+			
 			voteItem.innerHTML = `
 				<div class="public-vote-left">
 					<div class="public-vote-scenario">${formatScenarioDisplay(vote.scenario)}</div>
-					<div class="public-vote-amount">${formatCurrency(displayedAmount)}</div>
+					<div class="public-vote-amount">₪${minFormatted} עד ₪${maxFormatted}</div>
 					<div class="public-vote-time">${timeAgo}</div>
 				</div>
 				<div class="public-vote-right">
@@ -278,9 +285,17 @@
 		// Always apply party size multiplication to get the correct display amount
 		const displayedAmount = applyPersonalAdjustments(vote.amount, { partySize });
 		
+		// Calculate range for notification (add 5 for better rounding)
+		const adjustedAmount = displayedAmount + 5;
+		const minAmount = Math.max(150, adjustedAmount - 25);
+		const maxAmount = adjustedAmount + 25;
+		
+		const minFormatted = formatCurrency(minAmount).replace('₪', '').trim();
+		const maxFormatted = formatCurrency(maxAmount).replace('₪', '').trim();
+		
 		notification.innerHTML = `
 			<span class="vote-icon">${voteText[vote.voteType]}</span>
-			<span>הצבעה חדשה: ${formatCurrency(displayedAmount)} - ${voteText[vote.voteType]}</span>
+			<span>הצבעה חדשה: ₪${minFormatted} עד ₪${maxFormatted} - ${voteText[vote.voteType]}</span>
 		`;
 		
 		voteNotifications.appendChild(notification);
@@ -544,8 +559,18 @@
 
 	function updateCheque(amount, eventType, isVoteImpact = false) {
 		console.log('updateCheque called with:', { amount, eventType, isVoteImpact });
-		amountEl.textContent = formatCurrency(amount);
-		amountWordsEl.textContent = shekelsToWords(amount);
+		
+		// Calculate range: add 5 for better rounding, then ±25 NIS around the amount
+		const adjustedAmount = amount + 5;
+		const minAmount = Math.max(150, adjustedAmount - 25); // Ensure minimum 150 NIS
+		const maxAmount = adjustedAmount + 25;
+		
+		// Display range instead of single amount (avoid duplicate ₪ symbols)
+		const minFormatted = formatCurrency(minAmount).replace('₪', '').trim();
+		const maxFormatted = formatCurrency(maxAmount).replace('₪', '').trim();
+		amountEl.textContent = `₪${minFormatted} עד ₪${maxFormatted}`;
+		amountWordsEl.textContent = `${shekelsToWords(minAmount)} - ${shekelsToWords(maxAmount)}`;
+		
 		chequeDateEl.textContent = new Date().toLocaleDateString('he-IL');
 		document.getElementById('chequeMemo').textContent = getEventMemo(eventType);
 		
@@ -806,7 +831,17 @@
 			// Enhanced vote impact display
 			if (impact !== 0) {
 				const changeText = impact > 0 ? `+${formatCurrency(impact)}` : formatCurrency(impact);
-				const impactMessage = `🎯 ההצבעה שלכם השפיעה! ${changeText} • ${formatCurrency(oldAmount)} → ${formatCurrency(newAmount)}`;
+				const oldAdjusted = oldAmount + 5;
+				const newAdjusted = newAmount + 5;
+				const oldMin = Math.max(150, oldAdjusted - 25);
+				const oldMax = oldAdjusted + 25;
+				const newMin = Math.max(150, newAdjusted - 25);
+				const newMax = newAdjusted + 25;
+				const oldMinFormatted = formatCurrency(oldMin).replace('₪', '').trim();
+				const oldMaxFormatted = formatCurrency(oldMax).replace('₪', '').trim();
+				const newMinFormatted = formatCurrency(newMin).replace('₪', '').trim();
+				const newMaxFormatted = formatCurrency(newMax).replace('₪', '').trim();
+				const impactMessage = `🎯 ההצבעה שלכם השפיעה! ${changeText} • ₪${oldMinFormatted} עד ₪${oldMaxFormatted} → ₪${newMinFormatted} עד ₪${newMaxFormatted}`;
 				showVoteFeedback(impactMessage, 'success');
 				
 				// Add visual highlight to the amount change
