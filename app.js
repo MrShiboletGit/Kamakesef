@@ -227,10 +227,13 @@
 				minute: '2-digit'
 			});
 			
-			// Calculate the displayed amount (base amount * party size multiplier)
-			// The vote.amount is the per-person amount stored by the backend
+			// Calculate the displayed amount
 			const partySize = vote.scenario.partySize || 1;
-			const displayedAmount = applyPersonalAdjustments(vote.amount, { partySize });
+			let displayedAmount;
+			
+			// Always apply party size multiplication to get the correct display amount
+			// The vote.amount stored in backend is the per-person amount
+			displayedAmount = applyPersonalAdjustments(vote.amount, { partySize });
 			
 			// Format impact display
 			let impactDisplay = '';
@@ -270,8 +273,9 @@
 			'tooHigh': '📈 גבוה מדי'
 		};
 		
-		// Calculate the displayed amount (base amount * party size multiplier)
+		// Calculate the displayed amount
 		const partySize = vote.scenario.partySize || 1;
+		// Always apply party size multiplication to get the correct display amount
 		const displayedAmount = applyPersonalAdjustments(vote.amount, { partySize });
 		
 		notification.innerHTML = `
